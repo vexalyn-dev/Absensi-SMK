@@ -37,30 +37,69 @@ class TeachingScheduleController extends Controller
     public function update(Request $request, User $teacher)
     {
         $validated = $request->validate([
-            'schedules' => 'required|array',
+            'schedules' => 'nullable|array',
+            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
             'schedules.*.classroom_id' => 'required|exists:classrooms,id',
             'schedules.*.subject_id' => 'nullable|exists:subjects,id',
-            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
             'schedules.*.period' => 'required|integer|min:1|max:15',
             'schedules.*.start_time' => 'required|date_format:H:i',
-            'schedules.*.end_time' => 'required|date_format:H:i|after:schedules.*.start_time',
+            'schedules.*.end_time' => 'required|date_format:H:i',
+            'schedules.*.schedule_id' => 'nullable|exists:teaching_schedules,id',
+            'delete_schedules' => 'nullable|array',
+            'delete_schedules.*' => 'exists:teaching_schedules,id',
         ]);
 
-        // Hapus jadwal lama
-        TeachingSchedule::where('user_id', $teacher->id)->delete();
+        \DB::beginTransaction();
+        try {
+            // 1. HAPUS JADWAL YANG DI-MARK FOR DELETE
+            if (!empty($validated['delete_schedules'])) {
+                TeachingSchedule::whereIn('id', $validated['delete_schedules'])
+                    ->where('user_id', $teacher->id)
+                    ->delete();
+            }
 
-        // Simpan jadwal baru
-        foreach ($validated['schedules'] as $schedule) {
-            TeachingSchedule::create([
-                'user_id' => $teacher->id,
-                'classroom_id' => $schedule['classroom_id'],
-                'subject_id' => $schedule['subject_id'] ?? null,
-                'day_of_week' => $schedule['day_of_week'],
-                'period' => $schedule['period'],
-                'start_time' => $schedule['start_time'],
-                'end_time' => $schedule['end_time'],
-                'is_active' => true,
-            ]);
+            // 2. PROSES SEMUA SCHEDULES DARI FORM
+            if (!empty($validated['schedules'])) {
+                foreach ($validated['schedules'] as $key => $scheduleData) {
+                    // Check if end_time is after start_time
+                    if (strtotime($scheduleData['end_time']) <= strtotime($scheduleData['start_time'])) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            "schedules.{$key}.end_time" => 'Jam pulang harus lebih besar dari jam masuk.'
+                        ]);
+                    }
+
+                    // Cek apakah ini edit jadwal existing atau tambah baru
+                    if (isset($scheduleData['schedule_id']) && $scheduleData['schedule_id']) {
+                        // UPDATE jadwal existing
+                        TeachingSchedule::where('id', $scheduleData['schedule_id'])
+                            ->where('user_id', $teacher->id)
+                            ->update([
+                                'day_of_week' => $scheduleData['day_of_week'],
+                                'classroom_id' => $scheduleData['classroom_id'],
+                                'subject_id' => $scheduleData['subject_id'] ?? null,
+                                'period' => $scheduleData['period'],
+                                'start_time' => $scheduleData['start_time'],
+                                'end_time' => $scheduleData['end_time'],
+                            ]);
+                    } else {
+                        // CREATE jadwal baru
+                        TeachingSchedule::create([
+                            'user_id' => $teacher->id,
+                            'day_of_week' => $scheduleData['day_of_week'],
+                            'classroom_id' => $scheduleData['classroom_id'],
+                            'subject_id' => $scheduleData['subject_id'] ?? null,
+                            'period' => $scheduleData['period'],
+                            'start_time' => $scheduleData['start_time'],
+                            'end_time' => $scheduleData['end_time'],
+                            'is_active' => true,
+                        ]);
+                    }
+                }
+            }
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            throw $e;
         }
 
         return redirect()->route('teaching-schedules.index')
