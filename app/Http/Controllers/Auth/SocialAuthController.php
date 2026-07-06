@@ -16,6 +16,14 @@ class SocialAuthController extends Controller
      */
     public function redirect($provider)
     {
+        // Force Google to always show account chooser
+        if ($provider === 'google') {
+            return Socialite::driver($provider)
+                ->scopes(['openid', 'email', 'profile'])
+                ->with(['prompt' => 'select_account'])
+                ->redirect();
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
@@ -26,34 +34,42 @@ class SocialAuthController extends Controller
     {
         try {
             $socialUser = Socialite::driver($provider)->user();
-            
-            // Find or create user
-            $user = User::firstOrCreate(
-                ['email' => $socialUser->getEmail()],
-                [
-                    'name' => $socialUser->getName(),
-                    'password' => bcrypt(Str::random(24)),
-                    'role' => 'guru',
-                    'is_active' => true,
-                    'provider' => $provider,
-                    'provider_id' => $socialUser->getId(),
-                ]
-            );
-            
-            // Update provider info if user exists
-            if ($user->wasRecentlyCreated === false) {
-                $user->update([
-                    'provider' => $provider,
+
+            // Check if user already exists
+            $existingUser = User::where('email', $socialUser->getEmail())->first();
+
+            if ($existingUser) {
+                // User already exists — update provider info and auto-login
+                $existingUser->update([
+                    'provider'    => $provider,
                     'provider_id' => $socialUser->getId(),
                 ]);
+
+                Auth::login($existingUser);
+
+                return redirect()->intended('/dashboard')
+                    ->with('success', 'Login berhasil melalui ' . ucfirst($provider));
             }
-            
-            Auth::login($user);
-            
-            return redirect()->intended('/dashboard')->with('success', 'Login berhasil melalui ' . ucfirst($provider));
-            
+
+            // User is NEW — create account and auto-login
+            $newUser = User::create([
+                'name'        => $socialUser->getName(),
+                'email'       => $socialUser->getEmail(),
+                'password'    => bcrypt(Str::random(24)),
+                'role'        => 'guru',
+                'is_active'   => true,
+                'provider'    => $provider,
+                'provider_id' => $socialUser->getId(),
+            ]);
+
+            Auth::login($newUser);
+
+            return redirect()->intended('/dashboard')
+                ->with('success', 'Akun berhasil dibuat dan Anda telah masuk melalui ' . ucfirst($provider) . '!');
+
         } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'Terjadi kesalahan saat login dengan ' . ucfirst($provider));
+            return redirect('/login')
+                ->with('error', 'Terjadi kesalahan saat login dengan ' . ucfirst($provider) . '. Silakan coba lagi.');
         }
     }
-}
+}

@@ -57,18 +57,7 @@
                     </div>
 
                     <div class="space-y-2 mb-4 text-xs">
-                        @if($classroom->building)
-                            <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
-                                <span>{{ $classroom->building }}</span>
-                            </div>
-                        @endif
-                        @if($classroom->floor)
-                            <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                                <span>Lantai {{ $classroom->floor }}</span>
-                            </div>
-                        @endif
+                        
                         <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                             <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
                             <span>{{ $classroom->teaching_schedules_count }} jadwal mengajar</span>
