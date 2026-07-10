@@ -266,196 +266,92 @@
             <!-- Page Content -->
             <div class="p-4 sm:p-6">
                 @yield('content')
+                
+                <!-- Spacer for Bottom Nav (Mobile Only) -->
+                <div class="lg:hidden h-32"></div>
             </div>
         </main>
         
         <!-- Mobile Overlay (tidak digunakan lagi karena sidebar hidden di mobile) -->
     </div>
 
-    <!-- Bottom Navigation (Mobile Only) - Animated Bubble -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-        <nav id="bottomNav" class="relative bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-2xl px-2 py-3">
-            
-            <!-- Animated Bubble Background -->
-            <div id="navBubble" class="absolute -top-6 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border-2 border-slate-100 dark:border-slate-700 transition-all pointer-events-none" 
-                 style="left: 0; transform: translateX(-50%);">
-            </div>
-            
-            <div class="grid grid-cols-6 gap-0 relative z-10">
-                <!-- Dashboard -->
+    <!-- Bottom Navigation (Mobile Only) -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom">
+        <nav class="bg-white dark:bg-slate-800 border-t-2 border-slate-200 dark:border-slate-700 shadow-2xl px-1 py-4">
+            <div class="grid grid-cols-6 gap-0">
+
+                {{-- Dashboard --}}
+                @php $isDashboard = request()->routeIs('teacher.dashboard'); @endphp
                 <a href="{{ route('teacher.dashboard') }}" 
-                   data-route="teacher.dashboard"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="layout-dashboard" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isDashboard ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="layout-dashboard" class="{{ $isDashboard ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isDashboard ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Dashboard</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isDashboard) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isDashboard ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Dashboard</span>
                 </a>
 
-                <!-- Jadwal -->
+                {{-- Jadwal --}}
+                @php $isSchedule = request()->routeIs('teacher.schedule'); @endphp
                 <a href="{{ route('teacher.schedule') }}" 
-                   data-route="teacher.schedule"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="calendar-range" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isSchedule ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="calendar-range" class="{{ $isSchedule ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isSchedule ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Jadwal</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isSchedule) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isSchedule ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Jadwal</span>
                 </a>
 
-                <!-- Absensi -->
+                {{-- Absensi --}}
+                @php $isAttendance = request()->routeIs('teacher.attendance') && !request()->routeIs('teacher.class-attendance'); @endphp
                 <a href="{{ route('teacher.attendance') }}" 
-                   data-route="teacher.attendance"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="scan-line" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isAttendance ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="scan-line" class="{{ $isAttendance ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isAttendance ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Absensi</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isAttendance) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isAttendance ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Absensi</span>
                 </a>
 
-                <!-- Kelas -->
+                {{-- Kelas --}}
+                @php $isClass = request()->routeIs('teacher.class-attendance'); @endphp
                 <a href="{{ route('teacher.class-attendance') }}" 
-                   data-route="teacher.class-attendance"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="scan" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isClass ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="scan" class="{{ $isClass ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isClass ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Kelas</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isClass) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isClass ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Kelas</span>
                 </a>
 
-                <!-- Riwayat -->
+                {{-- Riwayat --}}
+                @php $isHistory = request()->routeIs('teacher.history'); @endphp
                 <a href="{{ route('teacher.history', ['type' => 'daily']) }}" 
-                   data-route="teacher.history"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="history" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isHistory ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="history" class="{{ $isHistory ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isHistory ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Riwayat</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isHistory) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isHistory ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Riwayat</span>
                 </a>
 
-                <!-- Izin -->
+                {{-- Izin --}}
+                @php $isLeave = request()->routeIs('teacher.leave*'); @endphp
                 <a href="{{ route('teacher.leave') }}" 
-                   data-route="teacher.leave"
-                   class="nav-item relative flex flex-col items-center justify-end pb-3 pt-1 transition-colors duration-300">
-                    <div class="flex items-center justify-center mb-1.5">
-                        <i data-lucide="file-text" class="nav-icon w-6 h-6 text-slate-400 dark:text-slate-500 transition-colors duration-300"></i>
+                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
+                    <div class="{{ $isLeave ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
+                        <i data-lucide="file-text" class="{{ $isLeave ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isLeave ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
                     </div>
-                    <div class="h-7"></div>
-                    <span class="nav-label text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-colors duration-300">Izin</span>
-                    <div class="nav-indicator absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-navy-800 dark:bg-gold-400 rounded-full opacity-0 transition-opacity duration-300"></div>
+                    @if($isLeave) <div class="h-10"></div> @endif
+                    <span class="text-[10px] font-bold {{ $isLeave ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Izin</span>
                 </a>
+
             </div>
         </nav>
     </div>
 
     <!-- Spacer untuk bottom nav -->
     <div class="lg:hidden h-24"></div>
-
-    <script>
-        // Bottom Navigation Bubble Animation Controller
-        document.addEventListener('DOMContentLoaded', function() {
-            const bubble = document.getElementById('navBubble');
-            const navItems = document.querySelectorAll('.nav-item');
-            const currentPath = window.location.pathname;
-            
-            // Fungsi untuk set active state
-            function setActiveState(item, animate = false) {
-                // Reset semua item
-                navItems.forEach(navItem => {
-                    const icon = navItem.querySelector('.nav-icon');
-                    const label = navItem.querySelector('.nav-label');
-                    const indicator = navItem.querySelector('.nav-indicator');
-                    
-                    icon.classList.remove('text-navy-800', 'dark:text-gold-400');
-                    icon.classList.add('text-slate-400', 'dark:text-slate-500');
-                    
-                    label.classList.remove('text-navy-800', 'dark:text-gold-400');
-                    label.classList.add('text-slate-400', 'dark:text-slate-500');
-                    
-                    indicator.classList.add('opacity-0');
-                });
-                
-                // Set active item
-                const icon = item.querySelector('.nav-icon');
-                const label = item.querySelector('.nav-label');
-                const indicator = item.querySelector('.nav-indicator');
-                
-                icon.classList.remove('text-slate-400', 'dark:text-slate-500');
-                icon.classList.add('text-navy-800', 'dark:text-gold-400');
-                
-                label.classList.remove('text-slate-400', 'dark:text-slate-500');
-                label.classList.add('text-navy-800', 'dark:text-gold-400');
-                
-                indicator.classList.remove('opacity-0');
-                
-                // Posisi bubble
-                const itemRect = item.getBoundingClientRect();
-                const navRect = document.getElementById('bottomNav').getBoundingClientRect();
-                const newLeft = itemRect.left - navRect.left + (itemRect.width / 2);
-                
-                if (animate) {
-                    // Animasi shrink-move-grow
-                    bubble.style.transition = 'transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    bubble.style.transform = `translateX(-50%) scale(0)`;
-                    
-                    setTimeout(() => {
-                        bubble.style.left = `${newLeft}px`;
-                        bubble.style.transition = 'left 200ms ease-out, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1) 50ms';
-                    }, 150);
-                    
-                    setTimeout(() => {
-                        bubble.style.transform = `translateX(-50%) scale(1)`;
-                    }, 200);
-                } else {
-                    // Langsung tanpa animasi (page load)
-                    bubble.style.transition = 'none';
-                    bubble.style.left = `${newLeft}px`;
-                    bubble.style.transform = `translateX(-50%) scale(1)`;
-                    setTimeout(() => {
-                        bubble.style.transition = 'left 200ms ease-out, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    }, 50);
-                }
-            }
-            
-            // Set initial active state based on current route
-            let activeItem = null;
-            navItems.forEach(item => {
-                const route = item.getAttribute('data-route');
-                if (currentPath.includes(route.replace('teacher.', '/teacher/'))) {
-                    activeItem = item;
-                }
-            });
-            
-            if (activeItem) {
-                setActiveState(activeItem, false);
-            }
-            
-            // Handle click events
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetUrl = this.getAttribute('href');
-                    
-                    // Animate bubble
-                    setActiveState(this, true);
-                    
-                    // Navigate after animation completes
-                    setTimeout(() => {
-                        window.location.href = targetUrl;
-                    }, 320);
-                });
-            });
-        });
-    </script>
 
     <script>
         // Check saved theme on load — HARUS di atas segalanya
