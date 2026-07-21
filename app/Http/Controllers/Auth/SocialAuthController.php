@@ -101,21 +101,21 @@ class SocialAuthController extends Controller
                 'provider_id' => $socialUser->getId(),
             ]);
 
-            // Kirim email sambutan setelah akun dibuat
-            Log::info('Attempting to send welcome email for new social user', [
+            // Queue welcome email after the new user is created, so login is not delayed by SMTP.
+            Log::info('Attempting to queue welcome email for new social user', [
                 'user_id' => $newUser->id,
                 'email' => $newUser->email,
                 'provider' => $provider,
             ]);
 
             try {
-                Mail::mailer('smtp')->to($newUser->email)->send(new WelcomeEmail($newUser));
-                Log::info('Welcome email sent successfully', [
+                Mail::mailer('smtp')->to($newUser->email)->queue(new WelcomeEmail($newUser));
+                Log::info('Welcome email queued successfully', [
                     'user_id' => $newUser->id,
                     'email' => $newUser->email,
                 ]);
             } catch (\Exception $e) {
-                Log::error('Failed to send welcome email: ' . $e->getMessage(), [
+                Log::error('Failed to queue welcome email: ' . $e->getMessage(), [
                     'user_id' => $newUser->id,
                     'email' => $newUser->email,
                 ]);
