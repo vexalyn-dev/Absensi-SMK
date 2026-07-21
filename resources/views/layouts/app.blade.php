@@ -746,5 +746,132 @@
             });
         }
     </script>
+
+    <!-- Real-time Notification System -->
+    <script>
+        let lastNotificationIds = new Set();
+        let notificationAudio = null;
+
+        // Initialize notification sound (iPhone-like)
+        function initNotificationSound() {
+            // Create iPhone-like notification sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create a simple notification tone
+            const duration = 0.5;
+            const now = audioContext.currentTime;
+            
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            // iPhone notification tone frequencies
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.setValueAtTime(1000, now + 0.1);
+            
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+            
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            try {
+                initNotificationSound();
+            } catch (e) {
+                console.log('Audio API not available:', e.message);
+            }
+        }
+
+        // Show toast notification
+        function showNotificationToast(notification) {
+            const toast = document.createElement('div');
+            toast.className = `
+                fixed bottom-6 right-6 p-4 rounded-lg shadow-lg animate-bounce-in
+                flex items-start gap-3 max-w-sm z-50
+                ${notification.bg_color} transition-all duration-300
+            `;
+            
+            // Parse bg_color to get text classes
+            const bgClasses = notification.bg_color.split(' ');
+            const bgColor = bgClasses[0]; // bg-blue-100
+            const textColor = bgClasses[1]; // text-blue-600
+            
+            toast.innerHTML = `
+                <div class="flex-shrink-0 mt-0.5">
+                    <i data-lucide="${notification.icon}" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-sm">${notification.title}</h3>
+                    <p class="text-xs opacity-90 mt-1">${notification.message}</p>
+                    <p class="text-xs opacity-75 mt-2">${notification.created_at}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="flex-shrink-0 opacity-50 hover:opacity-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Render lucide icons
+            lucide.createIcons();
+            
+            // Auto remove after 6 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 6000);
+        }
+
+        // Poll for new notifications
+        async function checkNotifications() {
+            try {
+                const response = await fetch('{{ route("notifications.api.unread") }}', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.notifications.length > 0) {
+                    // Update notification badge if it exists
+                    const notifBadge = document.querySelector('.notification-badge');
+                    if (notifBadge) {
+                        notifBadge.textContent = data.unreadCount;
+                        if (data.unreadCount > 0) {
+                            notifBadge.style.display = 'block';
+                        }
+                    }
+                    
+                    // Show new notifications only
+                    data.notifications.forEach(notification => {
+                        if (!lastNotificationIds.has(notification.id)) {
+                            lastNotificationIds.add(notification.id);
+                            playNotificationSound();
+                            showNotificationToast(notification);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        }
+
+        // Start polling on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check immediately
+            checkNotifications();
+            
+            // Then check every 5 seconds
+            setInterval(checkNotifications, 5000);
+        });
+    </script>
 </body>
 </html>

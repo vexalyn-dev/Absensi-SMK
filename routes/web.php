@@ -166,6 +166,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/api/unread', [NotificationController::class, 'getUnread'])->name('notifications.api.unread');
     Route::get('/admin/notifications', fn() => redirect()->route('notifications.index'))->name('admin.notifications'); // Admin alias
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
@@ -213,6 +214,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('teacher')->name('teacher.')->g
         Route::get('/history/export', [TeacherHistoryController::class, 'export'])->name('history.export');
 
         Route::get('/notifications', [TeacherNotificationController::class, 'index'])->name('notifications');
+        Route::get('/notifications/api/unread', [TeacherNotificationController::class, 'getUnread'])->name('notifications.api.unread');
         Route::post('/notifications/{id}/read', [TeacherNotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [TeacherNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
         Route::delete('/notifications/{id}', [TeacherNotificationController::class, 'destroy'])->name('notifications.destroy');
