@@ -82,8 +82,9 @@ class LeaveController extends Controller
     public function show(LeaveRequest $leaveRequest)
     {
         // Pastikan hanya pemilik yang bisa lihat
-        if ($leaveRequest->user_id !== auth()->id()) {
-            abort(403);
+        if ((int) $leaveRequest->user_id !== (int) auth()->id()) {
+            return redirect()->route('teacher.leave')
+                ->with('error', 'Anda tidak memiliki akses ke detail pengajuan ini.');
         }
 
         return view('teacher.leave.show', compact('leaveRequest'));
@@ -91,8 +92,9 @@ class LeaveController extends Controller
 
     public function destroy(LeaveRequest $leaveRequest)
     {
-        if ($leaveRequest->user_id !== auth()->id()) {
-            abort(403);
+        if ((int) $leaveRequest->user_id !== (int) auth()->id()) {
+            return redirect()->route('teacher.leave')
+                ->with('error', 'Anda tidak memiliki akses untuk membatalkan pengajuan ini.');
         }
 
         if ($leaveRequest->status !== 'pending') {

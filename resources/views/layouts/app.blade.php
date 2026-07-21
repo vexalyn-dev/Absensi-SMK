@@ -146,6 +146,13 @@
             scrollbar-width: none;  /* Firefox */
         }
     </style>
+
+    <!-- Favicon Dynamic dari AppSetting -->
+    @php $appSettings = \App\Models\AppSetting::getInstance(); @endphp
+    @if($appSettings && $appSettings->app_favicon)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $appSettings->app_favicon) }}?v={{ time() }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('storage/' . $appSettings->app_favicon) }}?v={{ time() }}">
+    @endif
 </head>
 
 <body class="h-full bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
