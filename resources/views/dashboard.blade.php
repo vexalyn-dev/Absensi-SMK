@@ -124,7 +124,7 @@
                     <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Izin/Cuti</p>
                     <h3 class="text-2xl font-bold text-navy-800 dark:text-white mt-1">{{ $izinCuti }}</h3>
                     <div class="flex items-center gap-1.5 mt-1.5">
-                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" style="display:inline-block;min-width:6px;min-height:6px;"></span>
                         <span class="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Izin/Sakit/Cuti</span>
                     </div>
                 </div>
@@ -219,11 +219,30 @@
                 </div>
                 <div class="px-4 pb-4 sm:px-6 sm:pb-6">
                     <div class="relative rounded-xl border border-slate-200/70 dark:border-slate-600/50 bg-gradient-to-b from-slate-50/90 to-white dark:from-slate-900/40 dark:to-slate-800/30 min-h-[320px] sm:min-h-[360px] overflow-hidden">
-                        <div id="chart-loading-overlay" class="chart-loading-overlay" role="status" aria-live="polite">
-                            <div class="chart-loading-dot-wrap">
-                                <span class="chart-loading-dot" aria-hidden="true"></span>
+                        <!-- Modern Premium Loading Overlay -->
+                        <div id="chart-loading-overlay" class="hidden absolute inset-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-50" style="display:none;">
+                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                                <div style="text-align:center;">
+                                    <!-- Double Rotating Rings -->
+                                    <div style="position:relative;width:80px;height:80px;margin:0 auto;">
+                                        <div style="position:absolute;inset:0;border-radius:50%;border:4px solid #e2e8f0;border-top-color:#0f172a;animation:spin 1s linear infinite;"></div>
+                                        <div style="position:absolute;top:8px;left:8px;right:8px;bottom:8px;border-radius:50%;border:4px solid transparent;border-bottom-color:#facc15;animation:spinReverse 0.8s linear infinite;"></div>
+                                    </div>
+
+                                    <!-- Bouncing Dots -->
+                                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;">
+                                        <div style="width:8px;height:8px;background:#0f172a;border-radius:50%;animation:bounce 0.6s ease-in-out infinite;" class="dark-dot"></div>
+                                        <div style="width:8px;height:8px;background:#0f172a;border-radius:50%;animation:bounce 0.6s ease-in-out 0.15s infinite;" class="dark-dot"></div>
+                                        <div style="width:8px;height:8px;background:#0f172a;border-radius:50%;animation:bounce 0.6s ease-in-out 0.3s infinite;" class="dark-dot"></div>
+                                    </div>
+
+                                    <!-- Text -->
+                                    <div style="margin-top:20px;">
+                                        <p style="font-size:15px;font-weight:700;color:#000000;margin:0 0 4px;">Memuat Grafik</p>
+                                        <p style="font-size:13px;color:#64748b;margin:0;">Mohon tunggu sebentar...</p>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="chart-loading-label text-xs font-medium text-slate-500 dark:text-slate-400">Memuat grafik</span>
                         </div>
                         <div class="p-4 sm:p-5 h-[320px] sm:h-[360px]">
                             <canvas id="attendanceChart" aria-label="Grafik kehadiran harian"></canvas>
@@ -472,6 +491,23 @@
 
 <style>
     /* ==========================================
+       CHART LOADING ANIMATIONS
+       ========================================== */
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes spinReverse {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+    }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    .dark .dark-dot { background: #facc15 !important; }
+
+    /* ==========================================
        PULSE DOT ANIMATION - PERMANENT & STABLE
        ========================================== */
     .pulse-dot {
@@ -618,64 +654,6 @@
         width: 100% !important;
         height: 100% !important;
         display: block;
-    }
-
-    .chart-loading-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 3;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.65rem;
-        background: linear-gradient(145deg, rgba(248, 250, 252, 0.92) 0%, rgba(255, 255, 255, 0.88) 100%);
-        transition: opacity 0.45s ease, visibility 0.45s ease;
-    }
-
-    .dark .chart-loading-overlay {
-        background: linear-gradient(145deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.9) 100%);
-    }
-
-    .chart-loading-overlay.chart-loading-overlay--hide {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    .chart-loading-dot-wrap {
-        position: relative;
-        width: 2.5rem;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .chart-loading-dot {
-        width: 0.65rem;
-        height: 0.65rem;
-        border-radius: 9999px;
-        background: linear-gradient(135deg, #facc15 0%, #d97706 100%);
-        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.45);
-        animation: chartLoadingDotPulse 0.9s ease-in-out infinite;
-    }
-
-    .dark .chart-loading-dot {
-        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.35);
-    }
-
-    @keyframes chartLoadingDotPulse {
-        0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-            box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.5);
-        }
-        50% {
-            transform: scale(1.2);
-            opacity: 0.88;
-            box-shadow: 0 0 0 10px rgba(250, 204, 21, 0);
-        }
     }
 
     .chartjs-render-monitor {
@@ -1177,7 +1155,7 @@
     // ==========================================
     function showChartLoading() {
         const overlay = document.getElementById('chart-loading-overlay');
-        if (overlay) overlay.classList.remove('chart-loading-overlay--hide');
+        if (overlay) overlay.style.display = 'block';
         if (chartLoadingTimer) {
             clearTimeout(chartLoadingTimer);
             chartLoadingTimer = null;
@@ -1188,7 +1166,7 @@
         const overlay = document.getElementById('chart-loading-overlay');
         if (!overlay) return;
         chartLoadingTimer = setTimeout(() => {
-            overlay.classList.add('chart-loading-overlay--hide');
+            overlay.style.display = 'none';
             chartLoadingTimer = null;
         }, 1000);
     }

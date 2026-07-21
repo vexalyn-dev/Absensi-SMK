@@ -126,68 +126,134 @@
                 </div>
             </div>
 
-            <form action="{{ route('class-attendance.store') }}" method="POST">
+            <form action="{{ route('class-attendance.store') }}" method="POST" id="scan-form">
                 @csrf
-                <div class="relative aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-4">
-                    <video id="camera-video" class="absolute inset-0 w-full h-full object-cover" autoplay
-                        playsinline></video>
-                    <div id="camera-overlay"
-                        class="absolute inset-0 flex items-center justify-center bg-slate-900/80 text-white">
-                        <button type="button" onclick="startCamera()"
-                            class="px-6 py-3 bg-gold-500 text-navy-900 font-bold rounded-xl">
-                            Mulai Scan
-                        </button>
-                    </div>
-                </div>
                 <input type="hidden" name="qr_data" id="qr-data-input">
             </form>
+
+            <!-- Camera viewport -->
+            <div class="flex justify-center">
+            <div class="relative rounded-2xl overflow-hidden bg-slate-900" style="width:100%; max-width:360px; aspect-ratio:1/1;">
+                <video id="camera-video" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
+
+                <!-- Idle overlay -->
+                <div id="cam-idle" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white gap-3">
+                    <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
+                        <i data-lucide="scan-line" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-300">Tekan tombol untuk mulai scan</p>
+                </div>
+
+                <!-- Scan box overlay -->
+                <div id="cam-scan-overlay" class="absolute inset-0 hidden">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="absolute" style="top:50%;left:50%;transform:translate(-50%,-50%);width:220px;height:220px;">
+                        <div class="absolute inset-0 rounded-lg" style="box-shadow:0 0 0 9999px rgba(0,0,0,0.5);"></div>
+                        <span class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-gold-400 rounded-tl-lg"></span>
+                        <span class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-gold-400 rounded-tr-lg"></span>
+                        <span class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-gold-400 rounded-bl-lg"></span>
+                        <span class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-gold-400 rounded-br-lg"></span>
+                        <div class="qr-laser absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent" style="top:0;"></div>
+                    </div>
+                    <p class="absolute bottom-6 left-0 right-0 text-center text-xs text-white/70">Arahkan QR Code ke dalam kotak</p>
+                </div>
+            </div>
+            </div><!-- /justify-center -->
+
+            <div class="flex gap-2 mt-4 max-w-sm mx-auto">
+                <button id="btn-start" onclick="startCamera()"
+                        class="flex-1 px-4 py-3 bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    Mulai Scan
+                </button>
+                <button id="btn-stop" onclick="stopCamera()" class="hidden flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:bg-red-600">
+                    <i data-lucide="square" class="w-4 h-4"></i>
+                    Stop Scan
+                </button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script>
-        let video = document.getElementById('camera-video');
-        let stream = null;
-        let scanning = false;
+        let camStream = null;
+        let camScanning = false;
+        const video = document.getElementById('camera-video');
+
+        // Two reusable canvases: one for downsampled full frame, one for center crop
+        const c1 = document.createElement('canvas');
+        const ctx1 = c1.getContext('2d', { willReadFrequently: true });
+        const c2 = document.createElement('canvas');
+        const ctx2 = c2.getContext('2d', { willReadFrequently: true });
 
         function startCamera() {
-            document.getElementById('camera-overlay').classList.add('hidden');
-
+            // Request high resolution — browser will use best available
             navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
-            }).then(s => {
-                stream = s;
+                video: {
+                    facingMode: 'environment',
+                    width:  { ideal: 1920, min: 640 },
+                    height: { ideal: 1080, min: 480 }
+                }
+            })
+            .then(stream => {
+                camStream = stream;
                 video.srcObject = stream;
-                scanning = true;
-                scanFrame();
-            }).catch(err => {
-                alert('Kamera tidak dapat diakses');
-            });
+                video.play();
+                document.getElementById('cam-idle').classList.add('hidden');
+                document.getElementById('cam-scan-overlay').classList.remove('hidden');
+                document.getElementById('btn-start').classList.add('hidden');
+                document.getElementById('btn-stop').classList.remove('hidden');
+                camScanning = true;
+                requestAnimationFrame(scanTick);
+            })
+            .catch(() => alert('Kamera tidak dapat diakses. Pastikan izin kamera sudah diberikan.'));
         }
 
-        function scanFrame() {
-            if (!scanning) return;
+        function stopCamera() {
+            camScanning = false;
+            if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+            video.srcObject = null;
+            document.getElementById('cam-idle').classList.remove('hidden');
+            document.getElementById('cam-scan-overlay').classList.add('hidden');
+            document.getElementById('btn-start').classList.remove('hidden');
+            document.getElementById('btn-stop').classList.add('hidden');
+        }
 
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0);
+        function tryDecode(canvas, ctx, sx, sy, sw, sh, dw, dh) {
+            canvas.width = dw;
+            canvas.height = dh;
+            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, dw, dh);
+            const img = ctx.getImageData(0, 0, dw, dh);
+            return jsQR(img.data, dw, dh, { inversionAttempts: 'attemptBoth' });
+        }
 
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
+        function scanTick() {
+            if (!camScanning) return;
+            if (video.readyState < 2) { requestAnimationFrame(scanTick); return; }
 
-                if (code) {
-                    scanning = false;
-                    if (stream) stream.getTracks().forEach(t => t.stop());
-                    document.getElementById('qr-data-input').value = code.data;
-                    document.querySelector('form').submit();
-                    return;
-                }
+            const vw = video.videoWidth, vh = video.videoHeight;
+            if (!vw || !vh) { requestAnimationFrame(scanTick); return; }
+
+            // --- Pass 1: Full frame downsampled to 640px wide (fast) ---
+            const scale = Math.min(1, 640 / vw);
+            const dw1 = Math.round(vw * scale), dh1 = Math.round(vh * scale);
+            let code = tryDecode(c1, ctx1, 0, 0, vw, vh, dw1, dh1);
+
+            // --- Pass 2: Center crop 60% (catches close-up / off-center QR) ---
+            if (!code) {
+                const cx = Math.round(vw * 0.2), cy = Math.round(vh * 0.2);
+                const cw = Math.round(vw * 0.6), ch = Math.round(vh * 0.6);
+                const dw2 = Math.min(cw, 480), dh2 = Math.round(ch * dw2 / cw);
+                code = tryDecode(c2, ctx2, cx, cy, cw, ch, dw2, dh2);
             }
 
-            setTimeout(scanFrame, 150);
+            if (code && code.data) {
+                stopCamera();
+                document.getElementById('qr-data-input').value = code.data;
+                document.getElementById('scan-form').submit();
+                return;
+            }
+            requestAnimationFrame(scanTick);
         }
     </script>
 
@@ -196,4 +262,15 @@
             if (window.lucide) lucide.createIcons();
         });
     </script>
+
+    <style>
+        .qr-laser {
+            animation: qrLaser 1.8s ease-in-out infinite;
+        }
+        @keyframes qrLaser {
+            0%   { top: 0; }
+            50%  { top: calc(100% - 2px); }
+            100% { top: 0; }
+        }
+    </style>
 @endsection

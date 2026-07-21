@@ -9,6 +9,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\Teacher\ClassAttendanceController as TeacherClassAttendanceController;
+use App\Http\Controllers\Teacher\WorkScheduleController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TeacherScheduleController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Teacher\LeaveController as TeacherLeaveController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\NotificationController as TeacherNotificationController;
 use App\Http\Controllers\Admin\LeaveApprovalController;
+use App\Http\Controllers\Admin\ManualClassAttendanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,7 +65,10 @@ Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    
+});
+
+// Admin Routes
+Route::middleware(['auth', 'role:admin'])->group(function () {
     // Admin Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
@@ -174,14 +180,29 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/holidays/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy');
     Route::post('/holidays/fetch-national', [HolidayController::class, 'fetchNationalHolidays'])->name('holidays.fetch-national');
 
-    // Teacher Routes
-    Route::middleware(['auth', 'role:guru'])->prefix('teacher')->name('teacher.')->group(function () {
+    // Manual Class Attendance - dipindah ke grup admin dengan prefix
+});
+
+// Admin Manual Class Attendance (dengan prefix admin)
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/class-attendance/manual', [ManualClassAttendanceController::class, 'index'])->name('class-attendance.manual');
+    Route::post('/class-attendance/manual', [ManualClassAttendanceController::class, 'store'])->name('class-attendance.manual.store');
+    Route::delete('/class-attendance/manual/{id}', [ManualClassAttendanceController::class, 'destroy'])->name('class-attendance.manual.destroy');
+});
+
+// Teacher Routes
+Route::middleware(['auth', 'role:guru'])->prefix('teacher')->name('teacher.')->group(function () {
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
         Route::get('/schedule', [\App\Http\Controllers\Teacher\ScheduleController::class, 'index'])->name('schedule');
+        Route::get('/work-schedule', [WorkScheduleController::class, 'index'])->name('work-schedule');
         Route::get('/attendance', [\App\Http\Controllers\Teacher\AttendanceController::class, 'index'])->name('attendance');
         Route::post('/attendance/store', [\App\Http\Controllers\Teacher\AttendanceController::class, 'store'])->name('attendance.store');
-        Route::get('/class-attendance', [\App\Http\Controllers\Teacher\AttendanceController::class, 'classAttendance'])->name('class-attendance');
-        Route::post('/class-attendance/store', [\App\Http\Controllers\Teacher\AttendanceController::class, 'storeClassAttendance'])->name('class-attendance.store');
+        
+        // Class Attendance
+        Route::get('/class-attendance', [TeacherClassAttendanceController::class, 'index'])->name('class-attendance');
+        Route::post('/class-attendance/scan', [TeacherClassAttendanceController::class, 'scan'])->name('class-attendance.scan');
+        Route::post('/class-attendance/save-shared', [TeacherClassAttendanceController::class, 'saveSharedSpaceAttendance'])->name('class-attendance.save-shared');
+        
         Route::get('/profile', [TeacherProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [TeacherProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [TeacherProfileController::class, 'updatePassword'])->name('profile.password');
@@ -207,5 +228,4 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/leave-request', [TeacherDashboardController::class, 'storeLeaveRequest'])->name('leave-request.store');
         Route::post('/today-notes', [TeacherDashboardController::class, 'updateTodayNotes'])->name('today-notes.update');
         Route::get('/leaves', [TeacherDashboardController::class, 'leaves'])->name('leaves');
-    });
 });

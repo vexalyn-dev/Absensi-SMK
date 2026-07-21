@@ -289,13 +289,14 @@
                                     <a href="{{ route('teachers.edit', $teacher) }}" class="p-2 w-9 h-9 flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 rounded-lg transition-all" title="Edit">
                                         <i data-lucide="pencil" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
                                     </a>
-                                    <form action="{{ route('teachers.destroy', $teacher) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus guru ini?')" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-2 w-9 h-9 flex items-center justify-center bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg transition-all" title="Hapus">
-                                            <i data-lucide="trash-2" class="w-4 h-4 text-red-600 dark:text-red-400"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            onclick="showDeleteModal('{{ route('teachers.destroy', $teacher) }}', '{{ $teacher->name }}', false)"
+                                            class="p-2 w-9 h-9 flex items-center justify-center bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg transition-all delete-btn" 
+                                            data-delete-url="{{ route('teachers.destroy', $teacher) }}"
+                                            data-delete-label="{{ $teacher->name }}"
+                                            title="Hapus">
+                                        <i data-lucide="trash-2" class="w-4 h-4 text-red-600 dark:text-red-400"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>

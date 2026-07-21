@@ -29,8 +29,8 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Hadir Bulan Ini</p>
-                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $monthlyStats['hadir'] }}</h3>
-                    <p class="text-[10px] text-blue-500 mt-0.5">{{ $monthlyStats['total_days'] }} hari kerja</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $stats['hadir'] }}</h3>
+                    <p class="text-[10px] text-blue-500 mt-0.5">Bulan ini</p>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Terlambat</p>
-                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $monthlyStats['terlambat'] }}</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $stats['terlambat'] }}</h3>
                     <p class="text-[10px] text-yellow-600 mt-0.5">Perlu perbaikan</p>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Izin/Sakit</p>
-                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $monthlyStats['izin'] }}</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $stats['izin'] }}</h3>
                     <p class="text-[10px] text-green-500 mt-0.5">Hari</p>
                 </div>
             </div>
@@ -68,7 +68,7 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">Alpha</p>
-                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $monthlyStats['alpha'] }}</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold text-navy-800 dark:text-white mt-0.5">{{ $stats['alpha'] }}</h3>
                     <p class="text-[10px] text-red-500 mt-0.5">Tanpa keterangan</p>
                 </div>
             </div>
@@ -194,6 +194,94 @@
                 </div>
                 <p class="text-sm font-semibold text-navy-800 dark:text-white mb-1">Tidak ada jadwal mengajar hari ini</p>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Nikmati hari libur Anda!</p>
+            </div>
+        @endif
+    </div>
+
+    <!-- JADWAL KERJA (Work Schedule) -->
+    <div class="card p-5 sm:p-6">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                    <i data-lucide="briefcase" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-navy-800 dark:text-white">Jadwal Kerja</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Jam kerja mingguan Anda</p>
+                </div>
+            </div>
+            <span class="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold">
+                {{ $workSchedule->count() }} Hari
+            </span>
+        </div>
+
+        @if($workSchedule->count() > 0)
+            <div class="space-y-3">
+                @foreach($workSchedule as $work)
+                @php
+                    $dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    $isToday = $work->day_of_week === now()->dayOfWeek;
+                @endphp
+                <div class="p-4 rounded-xl border-2 transition-all
+                    {{ $isToday 
+                        ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800' 
+                        : 'bg-slate-50 dark:bg-slate-700/30 border-slate-200 dark:border-slate-700' }}">
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
+                                {{ $isToday 
+                                    ? 'bg-purple-100 dark:bg-purple-900/30' 
+                                    : 'bg-slate-200 dark:bg-slate-600' }}">
+                                <i data-lucide="calendar" class="w-5 h-5 {{ $isToday ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400' }}"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-navy-800 dark:text-white">
+                                    {{ $dayNames[$work->day_of_week] }}
+                                    @if($isToday)
+                                    <span class="ml-2 px-2 py-0.5 bg-purple-500 text-white rounded-full text-[10px]">Hari Ini</span>
+                                    @endif
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ \Carbon\Carbon::parse($work->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($work->end_time)->format('H:i') }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <p class="text-xs font-semibold text-navy-800 dark:text-white">
+                                {{ \Carbon\Carbon::parse($work->start_time)->diffInHours(\Carbon\Carbon::parse($work->end_time)) }} Jam
+                            </p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">
+                                Total kerja
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+
+                <!-- Summary -->
+                <div class="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold">Total Jam Kerja Mingguan</p>
+                            <p class="text-2xl font-bold text-purple-800 dark:text-purple-300">
+                                {{ $workSchedule->sum(fn($w) => \Carbon\Carbon::parse($w->start_time)->diffInHours(\Carbon\Carbon::parse($w->end_time))) }} Jam
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                            <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="text-center py-12">
+                <div class="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="briefcase" class="w-10 h-10 text-slate-400 dark:text-slate-500"></i>
+                </div>
+                <p class="text-sm font-semibold text-navy-800 dark:text-white mb-1">Belum ada jadwal kerja</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Hubungi admin untuk mengatur jadwal kerja Anda</p>
             </div>
         @endif
     </div>

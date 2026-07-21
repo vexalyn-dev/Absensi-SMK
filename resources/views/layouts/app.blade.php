@@ -305,11 +305,20 @@
 
                 <a href="{{ route('class-attendance.scan') }}" 
                    class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                          {{ request()->routeIs('class-attendance.*') 
+                          {{ request()->routeIs('class-attendance.*') && !request()->routeIs('admin.class-attendance.*')
                               ? 'bg-navy-800 text-white shadow-lg shadow-navy-800/30' 
                               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800' }}">
                     <i data-lucide="scan" class="w-4 h-4"></i>
                     <span>Presensi Kelas</span>
+                </a>
+
+                <a href="{{ route('admin.class-attendance.manual') }}" 
+                   class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
+                          {{ request()->routeIs('admin.class-attendance.manual*') 
+                              ? 'bg-navy-800 text-white shadow-lg shadow-navy-800/30' 
+                              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800' }}">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                    <span>Manual Presensi</span>
                 </a>
 
                 <a href="{{ route('attendance.history') }}" 
@@ -422,30 +431,47 @@
                         
                         <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                             <h3 class="text-sm font-bold text-navy-800 dark:text-white">Notifikasi</h3>
+                            @if(Auth::user()->notifications->where('read_at', null)->count() > 0)
+                            <button onclick="markAllNotifRead('admin')"
+                                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 text-[11px] font-semibold hover:opacity-90 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                Tandai Dibaca
+                            </button>
+                            @endif
                         </div>
 
                         <div class="max-h-[400px] overflow-y-auto">
                             @forelse(Auth::user()->notifications->take(5) as $notification)
-                                <a href="{{ $notification->data['url'] ?? '#' }}" class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0">
-                                    <div class="flex gap-3">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 
-                                            {{ ($notification->data['type'] ?? '') === 'success' ? 'bg-green-100 text-green-600' : 
-                                               (($notification->data['type'] ?? '') === 'error' ? 'bg-red-100 text-red-600' : 
-                                               'bg-blue-100 text-blue-600') }}">
-                                            <i data-lucide="{{ ($notification->data['type'] ?? '') === 'success' ? 'check-circle' : 
-                                                             (($notification->data['type'] ?? '') === 'error' ? 'alert-circle' : 'bell') }}" class="w-4 h-4"></i>
+                                <div class="flex items-start border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors notif-item">
+                                    <a href="{{ $notification->data['url'] ?? '#' }}" class="flex-1 block p-4">
+                                        <div class="flex gap-3 items-start">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 
+                                                {{ ($notification->data['type'] ?? '') === 'success' ? 'bg-green-100 text-green-600' : 
+                                                   (($notification->data['type'] ?? '') === 'error' ? 'bg-red-100 text-red-600' : 
+                                                   'bg-blue-100 text-blue-600') }}">
+                                                <i data-lucide="{{ ($notification->data['type'] ?? '') === 'success' ? 'check-circle' : 
+                                                                 (($notification->data['type'] ?? '') === 'error' ? 'alert-circle' : 'bell') }}" class="w-4 h-4"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-xs text-navy-800 dark:text-slate-200 {{ $notification->read_at ? 'font-medium opacity-60' : 'font-bold' }} notif-text">
+                                                    {{ $notification->data['message'] }}
+                                                </p>
+                                                <p class="text-[10px] text-slate-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                            </div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs font-medium text-navy-800 dark:text-slate-200 {{ $notification->read_at ? '' : 'font-bold' }}">
-                                                {{ $notification->data['message'] }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                        </div>
+                                    </a>
+                                    {{-- Check indicator --}}
+                                    <div class="shrink-0 self-center mr-3 notif-check-wrap">
                                         @if(!$notification->read_at)
-                                            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
+                                        {{-- Belum dibaca: single check abu --}}
+                                        <svg class="notif-check-single" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                        <svg class="notif-check-double hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                        @else
+                                        {{-- Sudah dibaca: double check hijau --}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
                                         @endif
                                     </div>
-                                </a>
+                                </div>
                             @empty
                                 <div class="p-8 text-center">
                                     <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
@@ -602,18 +628,8 @@
                 open: false,
                 markRead() {
                     if (this.open) {
-                        fetch('{{ route("admin.notifications.read-all") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                document.querySelectorAll('.notification-badge').forEach(el => el.remove());
-                            }
-                        });
+                        // Badge hanya dihapus manual via tombol "Tandai Dibaca"
+                        // Tidak auto-remove saat buka dropdown
                     }
                 },
                 init() {
@@ -643,6 +659,85 @@
         document.addEventListener('alpine:initialized', () => {
             initIcons();
         });
+
+        // Mark single notification as read
+        function markNotifRead(btn, id, type) {
+            const url = type === 'admin'
+                ? `/notifications/${id}/read`
+                : `/teacher/notifications/${id}/read`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    // Ganti tombol check jadi check-check (sudah dibaca)
+                    const wrapper = btn.closest('.group');
+                    if (wrapper) {
+                        // Hapus blue dot
+                        const blueDot = wrapper.querySelector('.bg-blue-500.rounded-full');
+                        if (blueDot) blueDot.remove();
+
+                        // Hilangkan bold dari teks
+                        const boldText = wrapper.querySelector('.font-bold');
+                        if (boldText) boldText.classList.remove('font-bold');
+
+                        // Ganti tombol jadi icon check-check hijau
+                        btn.outerHTML = `<div class="shrink-0 self-center mr-3 p-1.5"><i data-lucide="check-check" class="w-3.5 h-3.5 text-green-400"></i></div>`;
+                        initIcons();
+
+                        // Update badge count di bell icon
+                        const badge = document.querySelector('.notification-badge');
+                        if (badge) {
+                            const count = parseInt(badge.textContent) - 1;
+                            if (count <= 0) badge.remove();
+                            else badge.textContent = count;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mark ALL notifications as read
+        function markAllNotifRead(type) {
+            const url = type === 'teacher'
+                ? '/teacher/notifications/read-all'
+                : '/notifications/mark-all-read';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    // Semua single check → double check hijau
+                    document.querySelectorAll('.notif-check-wrap').forEach(wrap => {
+                        const single = wrap.querySelector('.notif-check-single');
+                        const double = wrap.querySelector('.notif-check-double');
+                        if (single) single.classList.add('hidden');
+                        if (double) double.classList.remove('hidden');
+                    });
+
+                    // Semua teks bold → normal
+                    document.querySelectorAll('.notif-text').forEach(el => {
+                        el.classList.remove('font-bold', 'font-semibold');
+                        el.classList.add('font-medium', 'opacity-60');
+                    });
+
+                    // Hapus tombol "Tandai Dibaca"
+                    const btn = document.querySelector('[onclick*="markAllNotifRead"]');
+                    if (btn) btn.remove();
+
+                    // Hapus badge notifikasi
+                    document.querySelectorAll('.notification-badge, [data-notif-count]').forEach(b => b.remove());
+                }
+            });
+        }
     </script>
 </body>
 </html>

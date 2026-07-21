@@ -29,10 +29,29 @@ class ProfileController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Update user
-        $user->update([
+        $photoPath = null;
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo
+            if ($teacher && $teacher->photo) {
+                Storage::disk('public')->delete($teacher->photo);
+            }
+            if ($user->photo) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            
+            $photoPath = $request->file('photo')->store('teachers', 'public');
+        }
+
+        // Update user (including photo)
+        $userData = [
             'name' => $validated['name'],
-        ]);
+        ];
+        if ($photoPath) {
+            $userData['photo'] = $photoPath;
+        }
+        $user->update($userData);
 
         // Update teacher
         if ($teacher) {
@@ -42,13 +61,8 @@ class ProfileController extends Controller
                 'address' => $validated['address'] ?? null,
             ];
 
-            // Handle photo upload
-            if ($request->hasFile('photo')) {
-                // Delete old photo
-                if ($teacher->photo) {
-                    Storage::disk('public')->delete($teacher->photo);
-                }
-                $teacherData['photo'] = $request->file('photo')->store('teachers', 'public');
+            if ($photoPath) {
+                $teacherData['photo'] = $photoPath;
             }
 
             $teacher->update($teacherData);

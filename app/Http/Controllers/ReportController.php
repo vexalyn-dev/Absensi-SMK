@@ -155,12 +155,29 @@ class ReportController extends Controller
                             'classroom' => $schedule->classroom->name ?? '-',
                             'subject' => $schedule->subject->name ?? '-',
                             'period' => $schedule->period,
-                            'status' => 'A',
+                            'status' => 'A', // Default Alpha
                         ];
 
                         if ($attendance) {
-                            if ($attendance->status === 'Hadir') { $attendedCount++; $classInfo['status'] = 'H'; }
-                            elseif ($attendance->status === 'Terlambat') { $lateCount++; $classInfo['status'] = 'T'; }
+                            // SMART MODE: Hanya hitung kalau IN + OUT lengkap
+                            if ($attendance->check_in_time && $attendance->check_out_time) {
+                                $duration = $attendance->check_in_time->diffInMinutes($attendance->check_out_time);
+                                
+                                // Harus minimal 30 menit durasi
+                                if ($duration >= 30) {
+                                    if ($attendance->status === 'Hadir') { 
+                                        $attendedCount++; 
+                                        $classInfo['status'] = 'H'; 
+                                    } elseif ($attendance->status === 'Terlambat') { 
+                                        $lateCount++; 
+                                        $classInfo['status'] = 'T'; 
+                                    }
+                                } else {
+                                    $classInfo['status'] = 'A'; // Durasi terlalu singkat = Alpha
+                                }
+                            } elseif ($attendance->check_in_time && !$attendance->check_out_time) {
+                                $classInfo['status'] = 'NL'; // Tidak Lengkap (belum scan keluar)
+                            }
                         }
 
                         $classDetails[] = $classInfo;

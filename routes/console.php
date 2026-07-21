@@ -29,3 +29,6 @@ Schedule::command('reminder:daily-attendance')->dailyAt('08:00')->withoutOverlap
 
 // Generate Alpha Absences (Jam 23:59 Malam - Akhir Hari)
 Schedule::command('attendance:generate-alpha')->dailyAt('23:59')->withoutOverlapping();
+
+// Check Incomplete Class Attendance (Setiap 15 menit)
+Schedule::command('attendance:check-incomplete')->everyFifteenMinutes()->withoutOverlapping();

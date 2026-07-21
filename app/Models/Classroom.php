@@ -9,14 +9,22 @@ class Classroom extends Model
 {
     protected $fillable = [
         'name',
-        'code',        // X-RPL, XI-RPL, XII-RPL
-        'class_level', // X, XI, XII
+        'code',
+        'major',
+        'level',
+        'type',
+        'location_type',
+        'is_shared',
+        'capacity',
+        'description',
+        'is_active',
         'qr_token',
-        'is_active'
+        'qr_code',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_shared' => 'boolean',
     ];
 
     protected static function boot()
@@ -57,12 +65,13 @@ class Classroom extends Model
      */
     public function getClassLevelColorAttribute()
     {
+        $level = $this->level ?? $this->class_level;
         $colors = [
             'X' => 'from-blue-500 to-cyan-500',
             'XI' => 'from-violet-500 to-purple-500',
             'XII' => 'from-emerald-500 to-teal-500'
         ];
-        return $colors[$this->class_level] ?? 'from-slate-500 to-gray-500';
+        return $colors[$level] ?? 'from-slate-500 to-gray-500';
     }
 
     /**

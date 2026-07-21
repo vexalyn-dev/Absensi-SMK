@@ -92,11 +92,45 @@
     </div>
 
     <!-- Data Table Container -->
-    <div class="card overflow-hidden">
-        <div id="loading-spinner" class="hidden p-12 text-center">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800 dark:border-gold-400"></div>
-            <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">Memuat data...</p>
+    <div class="card overflow-hidden relative" style="min-height: 400px;">
+        <!-- Modern Premium Loading Overlay -->
+        <div id="loading-spinner" class="hidden absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/95 backdrop-blur-md z-50 flex items-center justify-center">
+            <div class="text-center relative">
+                <!-- Animated Background Circle -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-navy-100 to-gold-100 dark:from-navy-900/30 dark:to-gold-900/30 animate-pulse"></div>
+                </div>
+                
+                <!-- Main Spinner -->
+                <div class="relative">
+                    <div class="w-20 h-20 border-4 border-slate-200 dark:border-slate-700 border-t-navy-800 dark:border-t-gold-400 rounded-full animate-spin mx-auto"></div>
+                    
+                    <!-- Inner rotating ring -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-14 h-14 border-4 border-transparent border-b-gold-400 dark:border-b-navy-400 rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1s;"></div>
+                    </div>
+                    
+                    <!-- Center icon -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i data-lucide="history" class="w-8 h-8 text-navy-600 dark:text-gold-400 animate-pulse"></i>
+                    </div>
+                </div>
+                
+                <!-- Text -->
+                <div class="mt-8">
+                    <p class="text-base font-bold mb-1" style="color: #000000 !important;">Memuat Riwayat</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Mohon tunggu sebentar...</p>
+                </div>
+                
+                <!-- Progress dots -->
+                <div class="flex items-center justify-center gap-1.5 mt-4">
+                    <div class="w-2 h-2 bg-navy-600 dark:bg-gold-400 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+                    <div class="w-2 h-2 bg-navy-600 dark:bg-gold-400 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+                    <div class="w-2 h-2 bg-navy-600 dark:bg-gold-400 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+                </div>
+            </div>
         </div>
+        
         <div id="table-container">
             <!-- Content will be loaded via AJAX -->
         </div>

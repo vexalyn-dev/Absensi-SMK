@@ -37,11 +37,12 @@
 
         <!-- Class Level Sections -->
         @php
-            $classLevels = ['X', 'XI', 'XII'];
+            $classLevels = ['X', 'XI', 'XII', 'Ruangan Bersama'];
             $levelColors = [
                 'X' => 'from-blue-500 to-cyan-500',
                 'XI' => 'from-violet-500 to-purple-500',
-                'XII' => 'from-emerald-500 to-teal-500'
+                'XII' => 'from-emerald-500 to-teal-500',
+                'Ruangan Bersama' => 'from-purple-500 to-indigo-500'
             ];
         @endphp
 
@@ -51,10 +52,10 @@
                     <!-- Section Header -->
                     <div class="flex items-center gap-3">
                         <div class="w-1 h-8 bg-gradient-to-b {{ $levelColors[$level] }} rounded-full"></div>
-                        <h2 class="text-xl font-bold text-navy-800 dark:text-white">Kelas {{ $level }}</h2>
+                        <h2 class="text-xl font-bold text-navy-800 dark:text-white">{{ $level === 'Ruangan Bersama' ? 'Ruangan Bersama' : 'Kelas ' . $level }}</h2>
                         <span
                             class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full text-xs font-bold">
-                            {{ $classrooms[$level]->count() }} kelas
+                            {{ $classrooms[$level]->count() }} {{ $level === 'Ruangan Bersama' ? 'ruangan' : 'kelas' }}
                         </span>
                     </div>
 
@@ -65,12 +66,23 @@
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="w-12 h-12 bg-gradient-to-br from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500 rounded-xl flex items-center justify-center shadow-lg">
-                                            <span
-                                                class="text-white dark:text-navy-900 font-bold text-sm">{{ substr($classroom->name, 0, 2) }}</span>
+                                            class="w-12 h-12 bg-gradient-to-br {{ $classroom->type === 'shared' ? 'from-purple-600 to-indigo-600' : 'from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500' }} rounded-xl flex items-center justify-center shadow-lg">
+                                            @if($classroom->type === 'shared')
+                                                <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+                                            @else
+                                                <span
+                                                    class="text-white dark:text-navy-900 font-bold text-sm">{{ substr($classroom->name, 0, 2) }}</span>
+                                            @endif
                                         </div>
                                         <div>
-                                            <h3 class="text-base font-bold text-navy-800 dark:text-white">{{ $classroom->name }}</h3>
+                                            <div class="flex items-center gap-2">
+                                                <h3 class="text-base font-bold text-navy-800 dark:text-white">{{ $classroom->name }}</h3>
+                                                @if($classroom->type === 'shared')
+                                                    <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                                                        Shared
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <p class="text-xs text-slate-500 dark:text-slate-400">Kode: {{ $classroom->code }}</p>
                                         </div>
                                     </div>

@@ -11,6 +11,9 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         [x-cloak] { display: none !important; }
+        
+        /* Reset body margin/padding */
+        body { margin: 0; padding: 0; }
 
         /* Hide scrollbar visually but keep scroll functionality */
         .scrollbar-hide {
@@ -23,7 +26,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
+<body class="bg-slate-50 dark:bg-slate-900 m-0 p-0">
     @php
         // Get teacher data for current user with error handling
         $teacherData = null;
@@ -37,10 +40,25 @@
             $teacherSubject = null;
         }
     @endphp
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen m-0 p-0" x-data="{ sidebarOpen: false }">
         
-        <!-- Sidebar (Desktop only - hidden on mobile) -->
-        <aside id="sidebar" class="hidden lg:flex w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-col fixed h-full z-30">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div x-show="sidebarOpen" 
+             @click="sidebarOpen = false"
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+             style="display: none;"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" 
+               class="fixed top-0 left-0 h-screen w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-50 transition-transform duration-300 lg:translate-x-0"
+               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+            
             <!-- Logo -->
             <div class="p-5 border-b border-slate-200 dark:border-slate-700">
                 <div class="flex items-center gap-3">
@@ -77,6 +95,15 @@
                               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700' }}">
                     <i data-lucide="calendar-range" class="w-4 h-4"></i>
                     <span>Jadwal Mengajar</span>
+                </a>
+
+                <a href="{{ route('teacher.work-schedule') }}" 
+                   class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
+                          {{ request()->routeIs('teacher.work-schedule') 
+                              ? 'bg-navy-800 text-white shadow-lg shadow-navy-800/30' 
+                              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700' }}">
+                    <i data-lucide="briefcase" class="w-4 h-4"></i>
+                    <span>Jadwal Kerja</span>
                 </a>
 
                 <a href="{{ route('teacher.attendance') }}" 
@@ -118,11 +145,17 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 lg:ml-64">
+        <main class="flex-1 lg:ml-64 min-h-screen">
             <!-- Top Bar -->
-            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-4 sticky top-0 z-20">
-                <div class="flex items-center justify-between">
+            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-20">
+                <div class="px-4 sm:px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center gap-3">
+                        <!-- Hamburger Menu (Mobile Only) -->
+                        <button @click="sidebarOpen = true" 
+                                class="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                            <i data-lucide="menu" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+                        </button>
+                        
                         <div>
                             <h2 class="text-lg font-bold text-navy-800 dark:text-white">@yield('page-title', 'Dashboard')</h2>
                             <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">{{ now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }} pukul {{ now()->format('H.i') }}</p>
@@ -163,28 +196,45 @@
                                 <div class="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 sticky top-0 z-10">
                                     <div class="flex items-center justify-between">
                                         <h3 class="text-sm font-bold text-navy-800 dark:text-white">Notifikasi</h3>
-                                        <button @click="open = false" class="sm:hidden p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors">
-                                            <i data-lucide="x" class="w-4 h-4 text-slate-500"></i>
+                                        @php $unreadCount = auth()->user()->notifications()->whereNull('read_at')->count(); @endphp
+                                        @if($unreadCount > 0)
+                                        <button onclick="markAllNotifRead('teacher')"
+                                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 text-[11px] font-semibold hover:opacity-90 transition-opacity">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                            Tandai Dibaca
                                         </button>
+                                        @endif
                                     </div>
                                 </div>
                                 
                                 <!-- Notifications List -->
                                 <div class="divide-y divide-slate-200 dark:divide-slate-700">
                                     @forelse(auth()->user()->notifications()->take(5)->get() as $notif)
-                                    <a href="{{ $notif->action_url ?? '#' }}" 
-                                       class="block p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <div class="flex items-start gap-2.5">
-                                            <div class="w-8 h-8 rounded-lg {{ $notif->color }} flex items-center justify-center flex-shrink-0">
-                                                <i data-lucide="{{ $notif->icon }}" class="w-4 h-4"></i>
+                                    <div class="flex items-start hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors notif-item">
+                                        <a href="{{ $notif->action_url ?? '#' }}" class="flex-1 p-3 min-w-0">
+                                            <div class="flex items-start gap-2.5">
+                                                <div class="w-8 h-8 rounded-lg {{ $notif->color }} flex items-center justify-center flex-shrink-0">
+                                                    <i data-lucide="{{ $notif->icon }}" class="w-4 h-4"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-xs text-navy-800 dark:text-white line-clamp-1 notif-text {{ $notif->is_read ? 'font-medium opacity-60' : 'font-semibold' }}">{{ $notif->title }}</p>
+                                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{{ $notif->message }}</p>
+                                                    <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">{{ $notif->time_ago }}</p>
+                                                </div>
                                             </div>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-xs font-semibold text-navy-800 dark:text-white line-clamp-1">{{ $notif->title }}</p>
-                                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{{ $notif->message }}</p>
-                                                <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">{{ $notif->time_ago }}</p>
-                                            </div>
+                                        </a>
+                                        {{-- Check indicator --}}
+                                        <div class="shrink-0 self-center mr-3 notif-check-wrap">
+                                            @if(!$notif->is_read)
+                                            {{-- Belum dibaca: single check abu --}}
+                                            <svg class="notif-check-single" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            <svg class="notif-check-double hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                            @else
+                                            {{-- Sudah dibaca: double check hijau --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                            @endif
                                         </div>
-                                    </a>
+                                    </div>
                                     @empty
                                     <div class="p-8 text-center">
                                         <i data-lucide="bell-off" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
@@ -278,84 +328,6 @@
         <!-- Mobile Overlay (tidak digunakan lagi karena sidebar hidden di mobile) -->
     </div>
 
-    <!-- Bottom Navigation (Mobile Only) -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom">
-        <nav class="bg-white dark:bg-slate-800 border-t-2 border-slate-200 dark:border-slate-700 shadow-2xl px-1 py-4">
-            <div class="grid grid-cols-6 gap-0">
-
-                {{-- Dashboard --}}
-                @php $isDashboard = request()->routeIs('teacher.dashboard'); @endphp
-                <a href="{{ route('teacher.dashboard') }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isDashboard ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="layout-dashboard" class="{{ $isDashboard ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isDashboard ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isDashboard) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isDashboard ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Dashboard</span>
-                </a>
-
-                {{-- Jadwal --}}
-                @php $isSchedule = request()->routeIs('teacher.schedule'); @endphp
-                <a href="{{ route('teacher.schedule') }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isSchedule ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="calendar-range" class="{{ $isSchedule ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isSchedule ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isSchedule) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isSchedule ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Jadwal</span>
-                </a>
-
-                {{-- Presensi --}}
-                @php $isAttendance = request()->routeIs('teacher.attendance') && !request()->routeIs('teacher.class-attendance'); @endphp
-                <a href="{{ route('teacher.attendance') }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isAttendance ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="scan-line" class="{{ $isAttendance ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isAttendance ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isAttendance) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isAttendance ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Presensi</span>
-                </a>
-
-                {{-- Kelas --}}
-                @php $isClass = request()->routeIs('teacher.class-attendance'); @endphp
-                <a href="{{ route('teacher.class-attendance') }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isClass ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="scan" class="{{ $isClass ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isClass ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isClass) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isClass ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Kelas</span>
-                </a>
-
-                {{-- Riwayat --}}
-                @php $isHistory = request()->routeIs('teacher.history'); @endphp
-                <a href="{{ route('teacher.history', ['type' => 'daily']) }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isHistory ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="history" class="{{ $isHistory ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isHistory ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isHistory) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isHistory ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Riwayat</span>
-                </a>
-
-                {{-- Izin --}}
-                @php $isLeave = request()->routeIs('teacher.leave*'); @endphp
-                <a href="{{ route('teacher.leave') }}" 
-                   class="relative flex flex-col items-center justify-end pb-2 pt-2 transition-all duration-300 active:scale-95">
-                    <div class="{{ $isLeave ? 'absolute -top-8 w-14 h-14 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center border-2 border-slate-100 dark:border-slate-700' : 'flex items-center justify-center mb-2' }}">
-                        <i data-lucide="file-text" class="{{ $isLeave ? 'w-7 h-7' : 'w-6 h-6' }} {{ $isLeave ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }}"></i>
-                    </div>
-                    @if($isLeave) <div class="h-10"></div> @endif
-                    <span class="text-[10px] font-bold {{ $isLeave ? 'text-navy-800 dark:text-gold-400' : 'text-slate-400 dark:text-slate-500' }} leading-tight text-center">Izin</span>
-                </a>
-
-            </div>
-        </nav>
-    </div>
-
-    <!-- Spacer untuk bottom nav -->
-    <div class="lg:hidden h-24"></div>
-
     <script>
         // Check saved theme on load — HARUS di atas segalanya
         if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -393,6 +365,80 @@
 
         document.addEventListener('DOMContentLoaded', () => initIcons());
         document.addEventListener('alpine:initialized', () => initIcons());
+
+        // Mark single notification as read
+        function markNotifRead(btn, id, type) {
+            const url = type === 'admin'
+                ? `/notifications/${id}/read`
+                : `/teacher/notifications/${id}/read`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    const wrapper = btn.closest('.group');
+                    if (wrapper) {
+                        // Hilangkan bold dari teks
+                        const boldText = wrapper.querySelector('.font-semibold');
+                        if (boldText) boldText.classList.add('opacity-60');
+
+                        // Ganti tombol jadi icon check-check hijau
+                        btn.outerHTML = `<div class="shrink-0 self-center mr-3 p-1.5"><i data-lucide="check-check" class="w-3.5 h-3.5 text-green-400"></i></div>`;
+                        initIcons();
+
+                        // Update badge count di bell icon
+                        const badge = document.querySelector('.notification-badge, [data-notif-count]');
+                        if (badge) {
+                            const count = parseInt(badge.textContent) - 1;
+                            if (count <= 0) badge.remove();
+                            else badge.textContent = count;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mark ALL notifications as read
+        function markAllNotifRead(type) {
+            const url = type === 'teacher'
+                ? '/teacher/notifications/read-all'
+                : '/notifications/mark-all-read';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    // Semua single check → double check hijau
+                    document.querySelectorAll('.notif-check-wrap').forEach(wrap => {
+                        const single = wrap.querySelector('.notif-check-single');
+                        const double = wrap.querySelector('.notif-check-double');
+                        if (single) single.classList.add('hidden');
+                        if (double) double.classList.remove('hidden');
+                    });
+
+                    // Semua teks bold → normal
+                    document.querySelectorAll('.notif-text').forEach(el => {
+                        el.classList.remove('font-bold', 'font-semibold');
+                        el.classList.add('font-medium', 'opacity-60');
+                    });
+
+                    // Hapus tombol "Tandai Dibaca"
+                    const btn = document.querySelector('[onclick*="markAllNotifRead"]');
+                    if (btn) btn.remove();
+
+                    // Hapus badge notifikasi
+                    document.querySelectorAll('.notification-badge, [data-notif-count]').forEach(b => b.remove());
+                }
+            });
+        }
     </script>
     
     <!-- Alpine.js for dropdown -->
@@ -401,20 +447,8 @@
             return {
                 open: false,
                 markRead() {
-                    if (this.open) {
-                        fetch('{{ route("teacher.notifications.read-all") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                document.querySelectorAll('.notification-badge').forEach(el => el.remove());
-                            }
-                        });
-                    }
+                    // Badge hanya dihapus manual via tombol "Tandai Dibaca"
+                    // Tidak auto-remove saat buka dropdown
                 },
                 init() {
                     this.$watch('open', value => this.markRead());
