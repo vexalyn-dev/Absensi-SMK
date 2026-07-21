@@ -8,6 +8,7 @@ use App\Models\TeachingSchedule;
 use App\Models\Classroom;
 use App\Models\ScanLog;
 use App\Models\Subject;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -41,7 +42,7 @@ class ClassAttendanceController extends Controller
     /**
      * Helper untuk mencatat audit trail setiap scan.
      */
-    private function logScan($user, $classroom, $mode, $status, $message, $request)
+    private function logScan(User $user, ?Classroom $classroom, string $mode, string $status, string $message, Request $request)
     {
         ScanLog::create([
             'user_id'      => $user->id,
@@ -357,7 +358,7 @@ class ClassAttendanceController extends Controller
         ], 200);
     }
 
-    private function processAttendanceForSchedule($activeSchedule, $user, $now, $mode, $scannedClassroom, $request)
+    private function processAttendanceForSchedule(TeachingSchedule $activeSchedule, User $user, Carbon $now, string $mode, ?Classroom $scannedClassroom, Request $request)
     {
         $today = $now->toDateString();
 

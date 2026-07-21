@@ -8,6 +8,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use App\Models\User;
 use App\Models\Teacher;
 use App\Models\Subject;
+use Illuminate\Support\Facades\DB;
 
 echo "=== VERIFYING DATA CONSISTENCY ===\n\n";
 

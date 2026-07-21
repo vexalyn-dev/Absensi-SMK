@@ -82,7 +82,7 @@ class LeaveController extends Controller
     public function show(LeaveRequest $leaveRequest)
     {
         // Pastikan hanya pemilik yang bisa lihat
-        if ((int) $leaveRequest->user_id !== (int) auth()->id()) {
+        if (!$leaveRequest || (int) $leaveRequest->user_id !== (int) auth()->id()) {
             return redirect()->route('teacher.leave')
                 ->with('error', 'Anda tidak memiliki akses ke detail pengajuan ini.');
         }
