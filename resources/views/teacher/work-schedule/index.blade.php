@@ -175,11 +175,11 @@
             </div>
             <h3 class="text-lg font-bold text-navy-800 dark:text-white mb-2">Belum Ada Jadwal Kerja</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                Hubungi admin untuk mengatur jadwal kerja Anda
+                Hubungi Operator untuk mengatur jadwal kerja Anda
             </p>
             <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-400">
                 <i data-lucide="mail" class="w-4 h-4"></i>
-                admin@icbct.sch.id
+                operator@icbct.sch.id
             </div>
         </div>
     @endif

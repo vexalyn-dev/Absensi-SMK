@@ -70,7 +70,11 @@
 
     <!-- Alerts -->
     @if(session('success'))
-    <div class="card p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 2000)" x-show="show"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="card p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
         <div class="flex items-center gap-3">
             <i data-lucide="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
             <p class="text-sm font-medium text-green-800 dark:text-green-300">{{ session('success') }}</p>

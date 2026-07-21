@@ -112,17 +112,47 @@
                 list.innerHTML = data.leaves?.length ? data.leaves.map(renderLeave).join('') : renderEmpty();
                 if (window.lucide) lucide.createIcons();
             } catch (error) {
+                refreshLeaveRequestsFromPage();
+            }
+        }
+
+        async function refreshLeaveRequestsFromPage() {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('_', Date.now().toString());
+
+                const response = await fetch(url.toString(), {
+                    cache: 'no-store',
+                    headers: {
+                        'Accept': 'text/html',
+                        'Cache-Control': 'no-cache',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const freshList = doc.getElementById('leave-requests-list');
+                if (!response.ok || !freshList) return;
+
+                list.innerHTML = freshList.innerHTML;
+                ['total', 'pending', 'approved', 'rejected'].forEach(key => {
+                    const stat = document.querySelector(`[data-leave-stat="${key}"]`);
+                    const freshStat = doc.querySelector(`[data-leave-stat="${key}"]`);
+                    if (stat && freshStat) stat.textContent = freshStat.textContent;
+                });
+                if (window.lucide) lucide.createIcons();
+            } catch (error) {
                 console.error('Error refreshing leave requests:', error);
             }
         }
 
-        window.refreshLeaveRequests = refreshLeaveRequests;
-        refreshLeaveRequests();
-        setInterval(refreshLeaveRequests, 2000);
-        window.addEventListener('focus', refreshLeaveRequests);
-        window.addEventListener('notifications:new', refreshLeaveRequests);
+        window.refreshLeaveRequests = refreshLeaveRequestsFromPage;
+        refreshLeaveRequestsFromPage();
+        setInterval(refreshLeaveRequestsFromPage, 2000);
+        window.addEventListener('focus', refreshLeaveRequestsFromPage);
+        window.addEventListener('notifications:new', refreshLeaveRequestsFromPage);
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) refreshLeaveRequests();
+            if (!document.hidden) refreshLeaveRequestsFromPage();
         });
     }
 
