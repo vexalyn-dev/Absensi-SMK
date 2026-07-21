@@ -58,10 +58,22 @@ class SocialAuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
 
+            Log::info('Social login callback started', [
+                'provider' => $provider,
+                'email' => $socialUser->getEmail(),
+                'id' => $socialUser->getId(),
+            ]);
+
             // Check if user already exists
             $existingUser = User::where('email', $socialUser->getEmail())->first();
 
             if ($existingUser) {
+                Log::info('Social login existing user', [
+                    'provider' => $provider,
+                    'user_id' => $existingUser->id,
+                    'email' => $existingUser->email,
+                ]);
+
                 // User already exists — update provider info and auto-login
                 $existingUser->update([
                     'provider'    => $provider,
@@ -72,6 +84,11 @@ class SocialAuthController extends Controller
 
                 return $this->redirectByRole($existingUser, $provider);
             }
+
+            Log::info('Social login creating new user', [
+                'provider' => $provider,
+                'email' => $socialUser->getEmail(),
+            ]);
 
             // User is NEW — create account and auto-login
             $newUser = User::create([
