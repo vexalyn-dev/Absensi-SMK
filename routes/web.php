@@ -65,6 +65,7 @@ Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->name('leaves.show');
 });
 
 // Admin Routes
@@ -134,7 +135,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
     Route::get('/leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('/leaves', [LeaveController::class, 'store'])->name('leaves.store');
-    Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->name('leaves.show');
     Route::post('/leaves/{leaveRequest}/approve', [LeaveApprovalController::class, 'approve'])->name('leaves.approve');
     Route::post('/leaves/{leaveRequest}/reject', [LeaveApprovalController::class, 'reject'])->name('leaves.reject');
     Route::get('/my-leaves', [LeaveController::class, 'myLeaves'])->name('leaves.my');
@@ -224,8 +224,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('teacher')->name('teacher.')->g
         Route::get('/leave/{leaveRequest}', [TeacherLeaveController::class, 'show'])->name('leave.show');
         Route::delete('/leave/{leaveRequest}', [TeacherLeaveController::class, 'destroy'])->name('leave.destroy');
 
-        Route::get('/leaves/create', [TeacherDashboardController::class, 'createLeaveRequest'])->name('leaves.create');
-        Route::post('/leave-request', [TeacherDashboardController::class, 'storeLeaveRequest'])->name('leave-request.store');
+        Route::get('/leaves/create', [TeacherLeaveController::class, 'create'])->name('leaves.create');
+        Route::post('/leave-request', [TeacherLeaveController::class, 'store'])->name('leave-request.store');
         Route::post('/today-notes', [TeacherDashboardController::class, 'updateTodayNotes'])->name('today-notes.update');
-        Route::get('/leaves', [TeacherDashboardController::class, 'leaves'])->name('leaves');
+        Route::get('/leaves', [TeacherLeaveController::class, 'index'])->name('leaves');
 });

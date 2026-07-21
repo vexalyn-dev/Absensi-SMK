@@ -66,23 +66,28 @@
         }
 
         .logo-container {
-            width: 90px;
-            height: 90px;
-            border-radius: 20px;
+            width: 96px;
+            height: 96px;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: transparent;
+            backdrop-filter: none;
+            border: 0;
         }
 
         .logo-container img {
-            width: 70%;
-            height: 70%;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+            filter: none;
+        }
+
+        .logo-container svg {
+            width: 72px;
+            height: 72px;
         }
 
         .panel-content {
@@ -163,6 +168,7 @@
             right: 0;
             opacity: 1;
             z-index: 2;
+            justify-content: flex-start;
         }
 
         /* Register Form - Default Hidden */
@@ -1005,10 +1011,7 @@
             body {
                 align-items: flex-start;
                 padding: 18px 14px;
-                background:
-                    radial-gradient(circle at 18% 12%, rgba(250, 204, 21, 0.16), transparent 30%),
-                    radial-gradient(circle at 88% 22%, rgba(15, 23, 42, 0.12), transparent 26%),
-                    linear-gradient(135deg, #EAF2FF 0%, #F8FAFC 48%, #E2E8F0 100%);
+                background: #FFFFFF;
             }
 
             .auth-container {
@@ -1029,9 +1032,14 @@
                 position: absolute;
                 width: 34px;
                 height: 34px;
-                background: #EAF2FF;
+                background: #0F172A;
                 z-index: 30;
                 pointer-events: none;
+            }
+
+            .auth-container.register-mode::before,
+            .auth-container.register-mode::after {
+                background: #FACC15;
             }
 
             .auth-container::before {
@@ -1071,15 +1079,15 @@
                 width: 92px;
                 height: 92px;
                 margin: 0 auto 16px;
-                border-radius: 999px;
-                background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(15, 23, 42, 0.08));
-                border: 4px solid #F8FAFC;
-                box-shadow: 0 14px 28px rgba(15, 23, 42, 0.15);
+                border-radius: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
             }
 
             .mobile-logo-container img {
-                width: 78%;
-                height: 78%;
+                width: 100%;
+                height: 100%;
                 object-fit: contain;
                 filter: none;
             }
@@ -1252,8 +1260,8 @@
             }
 
             .mobile-logo-container {
-                width: 82px;
-                height: 82px;
+                width: 84px;
+                height: 84px;
                 margin-bottom: 14px;
             }
 
@@ -1506,11 +1514,13 @@
             const mobileTitle = document.getElementById('mobileTitle');
             const mobileDesc = document.getElementById('mobileDesc');
             const formsContainer = document.querySelector('.forms-container');
+            const authContainer = document.querySelector('.auth-container');
 
             if (loginForm.classList.contains('hidden')) {
                 // Show Login
                 panel.classList.remove('register');
                 panel.classList.add('login');
+                if (authContainer) authContainer.classList.remove('register-mode');
                 loginForm.classList.remove('hidden');
                 registerForm.classList.remove('visible');
                 
@@ -1534,6 +1544,7 @@
                 // Show Register
                 panel.classList.remove('login');
                 panel.classList.add('register');
+                if (authContainer) authContainer.classList.add('register-mode');
                 loginForm.classList.add('hidden');
                 registerForm.classList.add('visible');
                 

@@ -268,7 +268,7 @@
                                 </label>
                                 <div class="relative">
                                     <i data-lucide="message-circle" class="absolute left-3 top-3 w-4 h-4 text-green-400"></i>
-                                    <textarea name="notes" rows="2" maxlength="500"
+                                    <textarea name="admin_notes" rows="2" maxlength="500"
                                               class="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-green-200 dark:border-green-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                                               placeholder="Catatan untuk pengaju..."></textarea>
                                 </div>
@@ -298,7 +298,7 @@
                                 </label>
                                 <div class="relative">
                                     <i data-lucide="message-square-x" class="absolute left-3 top-3 w-4 h-4 text-red-400"></i>
-                                    <textarea name="notes" rows="3" required maxlength="500"
+                                    <textarea name="admin_notes" rows="3" required maxlength="500"
                                               class="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
                                               placeholder="Jelaskan alasan penolakan..."></textarea>
                                 </div>

@@ -278,11 +278,15 @@
     $isWord = in_array($extension, ['doc', 'docx']);
     $isExcel = in_array($extension, ['xls', 'xlsx']);
     $isPowerpoint = in_array($extension, ['ppt', 'pptx']);
+    $attachmentExists = \Storage::disk('public')->exists($attachmentPath);
     
-    $fileSize = \Storage::disk('public')->size($attachmentPath);
-    $fileSizeFormatted = $fileSize >= 1048576 
-        ? round($fileSize / 1048576, 2) . ' MB' 
-        : round($fileSize / 1024, 2) . ' KB';
+    $fileSizeFormatted = '-';
+    if ($attachmentExists) {
+        $fileSize = \Storage::disk('public')->size($attachmentPath);
+        $fileSizeFormatted = $fileSize >= 1048576 
+            ? round($fileSize / 1048576, 2) . ' MB' 
+            : round($fileSize / 1024, 2) . ' KB';
+    }
 @endphp
 <div class="card p-4 sm:p-6" x-data="{ showPreview: false }">
     <!-- Header dengan posisi di kanan -->
@@ -374,7 +378,14 @@
         </div>
 
         <!-- Preview Container -->
-        @if($isImage)
+        @if(!$attachmentExists)
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+            <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0"></i>
+                <p class="text-xs sm:text-sm text-red-700 dark:text-red-300">File lampiran tidak ditemukan di storage.</p>
+            </div>
+        </div>
+        @elseif($isImage)
         <div x-show="showPreview"
              x-transition:enter="transition ease-out duration-500"
              x-transition:enter-start="opacity-0 scale-90 -translate-y-2"
@@ -418,6 +429,7 @@
         </div>
         @endif
 
+        @if($attachmentExists)
         <!-- Tombol Download -->
         <a href="{{ asset('storage/' . $attachmentPath) }}" 
            download="{{ $attachmentName }}"
@@ -425,6 +437,7 @@
             <i data-lucide="download" class="w-4 h-4"></i>
             Download Lampiran
         </a>
+        @endif
     </div>
 </div>
 @endif

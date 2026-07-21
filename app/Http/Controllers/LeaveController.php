@@ -70,6 +70,10 @@ class LeaveController extends Controller
             abort(403);
         }
 
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('teacher.leave.show', $leave);
+        }
+
         $leave->load(['user', 'approvedBy']);
 
         return view('leaves.show', compact('leave'));
