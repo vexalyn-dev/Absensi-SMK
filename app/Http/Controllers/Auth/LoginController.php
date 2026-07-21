@@ -31,10 +31,10 @@ class LoginController extends Controller
             
             // Redirect based on role
             if ($user->isTeacher()) {
-                return redirect()->intended('/teacher/dashboard')->with('success', 'Selamat datang, ' . $user->name . '!');
+                return redirect()->intended(route('teacher.dashboard'))->with('success', 'Selamat datang, ' . $user->name . '!');
             }
             
-            return redirect()->intended('/dashboard')->with('success', 'Selamat datang, ' . $user->name . '!');
+            return redirect()->intended(route('dashboard'))->with('success', 'Selamat datang, ' . $user->name . '!');
         }
 
         return redirect()->back()->withErrors([

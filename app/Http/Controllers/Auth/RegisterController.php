@@ -34,6 +34,11 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
+        // Redirect based on role
+        if ($user->isTeacher()) {
+            return redirect('/teacher/dashboard')->with('success', 'Akun berhasil dibuat! Selamat datang, ' . $user->name . '!');
+        }
+
         return redirect('/dashboard')->with('success', 'Akun berhasil dibuat! Selamat datang, ' . $user->name . '!');
     }
 }

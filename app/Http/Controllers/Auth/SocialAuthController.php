@@ -14,7 +14,7 @@ class SocialAuthController extends Controller
     /**
      * Redirect to provider
      */
-    public function redirect($provider)
+    public function redirect(string $provider)
     {
         // Force Google to always show account chooser
         if ($provider === 'google') {
@@ -30,7 +30,7 @@ class SocialAuthController extends Controller
     /**
      * Callback from provider
      */
-    public function callback($provider)
+    public function callback(string $provider)
     {
         try {
             $socialUser = Socialite::driver($provider)->user();
@@ -47,7 +47,13 @@ class SocialAuthController extends Controller
 
                 Auth::login($existingUser);
 
-                return redirect()->intended('/dashboard')
+                // Redirect based on role
+                if ($existingUser->isTeacher()) {
+                    return redirect()->intended(route('teacher.dashboard'))
+                        ->with('success', 'Login berhasil melalui ' . ucfirst($provider));
+                }
+
+                return redirect()->intended(route('dashboard'))
                     ->with('success', 'Login berhasil melalui ' . ucfirst($provider));
             }
 
@@ -64,7 +70,13 @@ class SocialAuthController extends Controller
 
             Auth::login($newUser);
 
-            return redirect()->intended('/dashboard')
+            // Redirect based on role
+            if ($newUser->isTeacher()) {
+                return redirect()->intended(route('teacher.dashboard'))
+                    ->with('success', 'Akun berhasil dibuat dan Anda telah masuk melalui ' . ucfirst($provider) . '!');
+            }
+
+            return redirect()->intended(route('dashboard'))
                 ->with('success', 'Akun berhasil dibuat dan Anda telah masuk melalui ' . ucfirst($provider) . '!');
 
         } catch (\Exception $e) {
@@ -72,4 +84,4 @@ class SocialAuthController extends Controller
                 ->with('error', 'Terjadi kesalahan saat login dengan ' . ucfirst($provider) . '. Silakan coba lagi.');
         }
     }
-}
+}

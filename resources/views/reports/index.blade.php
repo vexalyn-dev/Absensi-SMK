@@ -217,7 +217,7 @@
     <!-- Table Container -->
     <div class="card overflow-hidden relative" id="table-container">
         <!-- Modern Premium Loading Overlay -->
-        <div id="loading-overlay" class="hidden absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/95 backdrop-blur-md z-50 flex items-center justify-center">
+        <div id="loading-overlay" class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/95 backdrop-blur-md z-50" style="display: none; align-items: center; justify-content: center; flex-direction: column;">
             <div class="text-center relative">
                 <!-- Animated Background Circle -->
                 <div class="absolute inset-0 flex items-center justify-center">
