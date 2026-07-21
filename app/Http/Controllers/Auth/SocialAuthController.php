@@ -85,8 +85,18 @@ class SocialAuthController extends Controller
             ]);
 
             // Kirim email sambutan setelah akun dibuat
+            Log::info('Attempting to send welcome email for new social user', [
+                'user_id' => $newUser->id,
+                'email' => $newUser->email,
+                'provider' => $provider,
+            ]);
+
             try {
-                Mail::to($newUser->email)->send(new WelcomeEmail($newUser));
+                Mail::mailer('smtp')->to($newUser->email)->send(new WelcomeEmail($newUser));
+                Log::info('Welcome email sent successfully', [
+                    'user_id' => $newUser->id,
+                    'email' => $newUser->email,
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to send welcome email: ' . $e->getMessage(), [
                     'user_id' => $newUser->id,
