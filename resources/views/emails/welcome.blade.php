@@ -5,7 +5,7 @@ Terima kasih telah bergabung dengan **{{ $appName }}**.
 
 Akun Anda telah berhasil dibuat. Anda sekarang dapat mengakses sistem presensi digital kami.
 
-@component('mail::button', ['url' => url('/dashboard')])
+@component('mail::button', ['url' => $dashboardUrl])
 Mulai Menggunakan
 @endcomponent
 

@@ -16,6 +16,8 @@ class WelcomeEmail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public User $user;
+    public string $appName;
+    public string $dashboardUrl;
 
     /**
      * Create a new message instance.
@@ -23,6 +25,10 @@ class WelcomeEmail extends Mailable implements ShouldQueue
     public function __construct(User $user)
     {
         $this->user = $user;
+        $this->appName = config('app.name', 'ICB CT - Absensi Guru');
+        $this->dashboardUrl = $user->isTeacher()
+            ? route('teacher.dashboard')
+            : route('dashboard');
     }
 
     /**
@@ -31,7 +37,7 @@ class WelcomeEmail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Email',
+            subject: 'Selamat Datang di ' . $this->appName,
         );
     }
 

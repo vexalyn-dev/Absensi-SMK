@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Mail\WelcomeEmail;
+use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -101,23 +101,38 @@ class SocialAuthController extends Controller
                 'provider_id' => $socialUser->getId(),
             ]);
 
-            // Queue welcome email after the new user is created, so login is not delayed by SMTP.
-            Log::info('Attempting to queue welcome email for new social user', [
+            // Create teacher profile automatically for Google teacher login
+            $teacher = Teacher::create([
+                'user_id' => $newUser->id,
+                'name' => $newUser->name,
+                'email' => $newUser->email,
+                'phone' => null,
+                'address' => null,
+                'is_active' => true,
+            ]);
+
+            Log::info('Attempting to send welcome email for new social user', [
                 'user_id' => $newUser->id,
                 'email' => $newUser->email,
                 'provider' => $provider,
+                'teacher_id' => $teacher->id,
+                'employee_code' => $teacher->employee_code,
             ]);
 
             try {
-                Mail::mailer('smtp')->to($newUser->email)->queue(new WelcomeEmail($newUser));
-                Log::info('Welcome email queued successfully', [
+                Mail::mailer('smtp')->to($newUser->email)->send(new \App\Mail\WelcomeEmail($newUser));
+                Log::info('Welcome email sent successfully', [
                     'user_id' => $newUser->id,
                     'email' => $newUser->email,
+                    'teacher_id' => $teacher->id,
+                    'employee_code' => $teacher->employee_code,
                 ]);
             } catch (\Exception $e) {
-                Log::error('Failed to queue welcome email: ' . $e->getMessage(), [
+                Log::error('Failed to send welcome email: ' . $e->getMessage(), [
                     'user_id' => $newUser->id,
                     'email' => $newUser->email,
+                    'teacher_id' => $teacher->id,
+                    'employee_code' => $teacher->employee_code,
                 ]);
             }
 
