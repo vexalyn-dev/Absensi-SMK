@@ -280,6 +280,8 @@
             }
         }
 
+        window.refreshLeaveRequests = refreshLeaves;
+        refreshLeaves();
         setInterval(refreshLeaves, 3000);
         window.addEventListener('focus', refreshLeaves);
         document.addEventListener('visibilitychange', () => {

@@ -160,8 +160,7 @@
           sidebarOpen: false, 
           darkMode: (() => { 
               try { 
-                  return localStorage.getItem('theme') === 'dark' || 
-                         (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  return localStorage.getItem('theme') === 'dark';
               } catch(e) { return false; } 
           })(),
           profileOpen: false,
@@ -752,5 +751,6 @@
     </script>
 
     <script src="{{ asset('js/notifications.js') }}?v={{ filemtime(public_path('js/notifications.js')) }}"></script>
+    <script src="{{ asset('js/leaves-realtime.js') }}?v={{ filemtime(public_path('js/leaves-realtime.js')) }}"></script>
 </body>
 </html>

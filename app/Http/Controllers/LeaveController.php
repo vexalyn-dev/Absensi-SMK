@@ -54,7 +54,7 @@ class LeaveController extends Controller
                 'approve_url' => route('leaves.approve', $leave),
                 'reject_url' => route('leaves.reject', $leave),
             ]),
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     public function create()

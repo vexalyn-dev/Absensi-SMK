@@ -11,7 +11,7 @@
 
     // Check saved theme on load
     try {
-        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
         }
     } catch(e){}
@@ -233,6 +233,10 @@
                             lastNotificationIds.add(notification.id);
                             playNotificationSound();
                             showNotificationToast(notification);
+                            if (typeof window.refreshLeaveRequests === 'function') {
+                                window.refreshLeaveRequests();
+                            }
+                            window.dispatchEvent(new CustomEvent('notifications:new', { detail: notification }));
                         }
 
                         const item = document.createElement('div');
