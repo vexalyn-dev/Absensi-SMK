@@ -750,7 +750,6 @@
     <!-- Real-time Notification System -->
     <script>
         let lastNotificationIds = new Set();
-        let notificationAudio = null;
 
         // Initialize notification sound (iPhone-like)
         function initNotificationSound() {
@@ -796,15 +795,7 @@
                 ${notification.bg_color} transition-all duration-300
             `;
             
-            // Parse bg_color to get text classes
-            const bgClasses = notification.bg_color.split(' ');
-            const bgColor = bgClasses[0]; // bg-blue-100
-            const textColor = bgClasses[1]; // text-blue-600
-            
             toast.innerHTML = `
-                <div class="flex-shrink-0 mt-0.5">
-                    <i data-lucide="${notification.icon}" class="w-5 h-5"></i>
-                </div>
                 <div class="flex-1">
                     <h3 class="font-semibold text-sm">${notification.title}</h3>
                     <p class="text-xs opacity-90 mt-1">${notification.message}</p>
