@@ -56,8 +56,8 @@ class ClassroomController extends Controller
             'is_active'     => $request->has('is_active') ? 1 : 0,
         ]);
 
-        // Generate QR Code image
-        $qrData = "{$classroom->id}|{$classroom->code}";
+        // Generate QR Code image - gunakan JSON format dengan token untuk keamanan
+        $qrData = $classroom->qr_data; // {"type":"classroom","classroom_id":...,"token":...}
         $qrPath = $this->generateQRCode($qrData, $classroom->code);
         $classroom->update(['qr_code' => $qrPath]);
 
@@ -97,8 +97,8 @@ class ClassroomController extends Controller
             'is_active'     => $request->has('is_active') ? 1 : 0,
         ]);
 
-        // Regenerate QR Code jika kode berubah
-        $qrData = "{$classroom->id}|{$classroom->code}";
+        // Regenerate QR Code - gunakan JSON format dengan token untuk keamanan
+        $qrData = $classroom->qr_data; // {"type":"classroom","classroom_id":...,"token":...}
         $qrPath = $this->generateQRCode($qrData, $classroom->code);
         $classroom->update(['qr_code' => $qrPath]);
 
@@ -122,6 +122,42 @@ class ClassroomController extends Controller
     public function qrCode(Classroom $classroom)
     {
         return view('classrooms.qr', compact('classroom'));
+    }
+
+    /**
+     * Regenerate QR Code untuk satu kelas (paksa format JSON baru).
+     */
+    public function regenerateQr(Classroom $classroom)
+    {
+        // Hapus file lama jika ada
+        if ($classroom->qr_code && \Illuminate\Support\Facades\Storage::disk('public')->exists($classroom->qr_code)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($classroom->qr_code);
+        }
+
+        $qrPath = $this->generateQRCode($classroom->qr_data, $classroom->code);
+        $classroom->update(['qr_code' => $qrPath]);
+
+        return back()->with('success', "QR Code kelas {$classroom->name} berhasil diperbarui.");
+    }
+
+    /**
+     * Regenerate QR Code semua kelas sekaligus.
+     */
+    public function regenerateAllQr()
+    {
+        $classrooms = Classroom::all();
+        $count = 0;
+
+        foreach ($classrooms as $classroom) {
+            if ($classroom->qr_code && \Illuminate\Support\Facades\Storage::disk('public')->exists($classroom->qr_code)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($classroom->qr_code);
+            }
+            $qrPath = $this->generateQRCode($classroom->qr_data, $classroom->code);
+            $classroom->update(['qr_code' => $qrPath]);
+            $count++;
+        }
+
+        return back()->with('success', "QR Code {$count} kelas berhasil diperbarui ke format baru.");
     }
 
     /**

@@ -120,6 +120,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Data Kelas
     Route::resource('classrooms', ClassroomController::class);
     Route::get('/classrooms/{classroom}/qr', [ClassroomController::class, 'qrCode'])->name('classrooms.qr');
+    Route::post('/classrooms/{classroom}/qr/regenerate', [ClassroomController::class, 'regenerateQr'])->name('classrooms.qr.regenerate');
+    Route::post('/classrooms/qr/regenerate-all', [ClassroomController::class, 'regenerateAllQr'])->name('classrooms.qr.regenerate-all');
     
     // Jadwal Mengajar
     Route::get('/teaching-schedules', [TeachingScheduleController::class, 'index'])->name('teaching-schedules.index');
@@ -203,7 +205,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('teacher')->name('teacher.')->g
         // Class Attendance
         Route::get('/class-attendance', [TeacherClassAttendanceController::class, 'index'])->name('class-attendance');
         Route::post('/class-attendance/scan', [TeacherClassAttendanceController::class, 'scan'])->name('class-attendance.scan');
-        Route::post('/class-attendance/save-shared', [TeacherClassAttendanceController::class, 'saveSharedSpaceAttendance'])->name('class-attendance.save-shared');
+        Route::post('/class-attendance/save-shared', [TeacherClassAttendanceController::class, 'saveSharedSpace'])->name('class-attendance.save-shared');
         
         Route::get('/profile', [TeacherProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [TeacherProfileController::class, 'update'])->name('profile.update');

@@ -17,11 +17,23 @@
                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola data kelas dan QR Code</p>
                 </div>
             </div>
-            <a href="{{ route('classrooms.create') }}"
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500 hover:from-navy-900 hover:to-slate-900 dark:hover:from-gold-500 dark:hover:to-gold-600 text-white dark:text-navy-900 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                Tambah Kelas
-            </a>
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+                <!-- Tombol Regenerate Semua QR -->
+                <form action="{{ route('classrooms.qr.regenerate-all') }}" method="POST"
+                      onsubmit="return confirm('Regenerate QR Code semua kelas ke format JSON baru? Proses ini mungkin butuh beberapa saat.')">
+                    @csrf
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold transition-all shadow hover:shadow-md hover:-translate-y-0.5">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        Regenerate Semua QR
+                    </button>
+                </form>
+                <a href="{{ route('classrooms.create') }}"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500 hover:from-navy-900 hover:to-slate-900 dark:hover:from-gold-500 dark:hover:to-gold-600 text-white dark:text-navy-900 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Tambah Kelas
+                </a>
+            </div>
         </div>
 
         <!-- Alert -->
@@ -105,6 +117,14 @@
                                         <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
                                         QR Code
                                     </a>
+                                    <form action="{{ route('classrooms.qr.regenerate', $classroom) }}" method="POST" class="contents">
+                                        @csrf
+                                        <button type="submit"
+                                            class="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-lg transition-all flex items-center justify-center border border-amber-200 dark:border-amber-800"
+                                            title="Regenerate QR Code">
+                                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('classrooms.edit', $classroom) }}"
                                         class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold transition-all flex items-center justify-center border border-slate-200 dark:border-slate-600"
                                         title="Edit Kelas">

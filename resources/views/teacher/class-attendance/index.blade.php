@@ -224,22 +224,33 @@
          x-transition
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style="display: none;">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden" @click.away="showSharedSpaceModal = false">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
                         <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-navy-800 dark:text-white">Presensi Ruangan Bersama</h3>
+                        <h3 class="text-base font-bold text-navy-800 dark:text-white"
+                            x-text="mode === 'in' ? 'Presensi Masuk - Ruangan Bersama' : 'Presensi Keluar - Ruangan Bersama'"></h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400" x-text="sharedSpaceLocation"></p>
                     </div>
                 </div>
-                <button @click="showSharedSpaceModal = false" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all">
+                <button @click="showSharedSpaceModal = false" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
                     <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
                 </button>
             </div>
 
-            <div class="p-6 space-y-4">
+            <!-- Body: MODE IN -->
+            <div x-show="mode === 'in'" class="p-5 space-y-4">
+                <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <p class="text-xs text-green-700 dark:text-green-400 font-medium">
+                        <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>
+                        Pilih kelas, mapel, dan jam pelajaran yang akan diajar
+                    </p>
+                </div>
+
                 <div>
                     <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">Kelas yang Diajar <span class="text-red-500">*</span></label>
                     <select x-model="sharedSpaceSelectedClass"
@@ -263,18 +274,89 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">Jam Ke- <span class="text-red-500">*</span></label>
-                    <input type="number" x-model="sharedSpacePeriod" min="1" max="12" placeholder="1-12"
-                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-800 dark:focus:ring-gold-500">
+                    <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">
+                        Jam Ke- <span class="text-red-500">*</span>
+                        <span class="text-xs font-normal text-slate-400 ml-1">(1 – 12)</span>
+                    </label>
+                    <div class="flex gap-2 flex-wrap">
+                        <template x-for="jam in [1,2,3,4,5,6,7,8,9,10,11,12]" :key="jam">
+                            <button type="button"
+                                    @click="sharedSpacePeriod = jam"
+                                    :class="sharedSpacePeriod == jam
+                                        ? 'bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 ring-2 ring-navy-800 dark:ring-gold-400'
+                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'"
+                                    class="w-10 h-10 rounded-lg text-sm font-bold transition-all"
+                                    x-text="jam">
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-6 border-t border-slate-200 dark:border-slate-700">
-                <button @click="submitSharedSpaceAttendance()"
-                        class="w-full px-6 py-3 bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 rounded-xl font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i>
-                    Simpan Presensi
-                </button>
+            <!-- Body: MODE OUT — tampilkan sesi aktif yang bisa dipilih -->
+            <div x-show="mode === 'out'" class="p-5 space-y-4">
+                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                    <p class="text-xs text-red-700 dark:text-red-400 font-medium">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5 inline mr-1"></i>
+                        Pilih sesi yang sedang berlangsung untuk diselesaikan
+                    </p>
+                </div>
+
+                <!-- Ada sesi aktif → tampilkan kartu -->
+                <template x-if="sharedSpaceActiveSessions.length > 0">
+                    <div class="space-y-2">
+                        <template x-for="session in sharedSpaceActiveSessions" :key="session.id">
+                            <div class="p-4 rounded-xl border-2 cursor-pointer transition-all"
+                                 :class="sharedSpaceSelectedSession == session.id
+                                     ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+                                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'"
+                                 @click="sharedSpaceSelectedSession = session.id">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-bold text-sm text-navy-800 dark:text-white" x-text="session.classroom_name"></p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400" x-text="session.subject_name + ' • Jam ke-' + session.period"></p>
+                                    </div>
+                                    <div class="text-right flex-shrink-0 ml-3">
+                                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-300" x-text="'Masuk ' + session.check_in_time"></p>
+                                        <p class="text-[10px] text-slate-400" x-text="session.duration_minutes + ' menit berlangsung'"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Tidak ada sesi aktif -->
+                <template x-if="sharedSpaceActiveSessions.length === 0">
+                    <div class="text-center py-8">
+                        <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ada sesi aktif di ruangan ini.</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Lakukan scan masuk terlebih dahulu.</p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-5 border-t border-slate-200 dark:border-slate-700">
+                <!-- Tombol IN -->
+                <template x-if="mode === 'in'">
+                    <button @click="submitSharedSpaceAttendance()"
+                            :disabled="!sharedSpaceSelectedClass || !sharedSpaceSelectedSubject || !sharedSpacePeriod"
+                            class="w-full px-6 py-3 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        Simpan Presensi Masuk
+                    </button>
+                </template>
+                <!-- Tombol OUT -->
+                <template x-if="mode === 'out'">
+                    <button @click="submitSharedSpaceCheckOut()"
+                            :disabled="!sharedSpaceSelectedSession && sharedSpaceActiveSessions.length > 0"
+                            class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                            x-show="sharedSpaceActiveSessions.length > 0">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Selesaikan Sesi Ini
+                    </button>
+                </template>
             </div>
         </div>
     </div>
@@ -421,14 +503,18 @@
             classSchedules: [],
             selectedScheduleId: null,
             scannedQrData: '',
+
+            // Shared space state
             showSharedSpaceModal: false,
             sharedSpaceLocation: '',
             sharedSpaceLocationId: '',
             sharedSpaceClasses: [],
             sharedSpaceSubjects: [],
+            sharedSpaceActiveSessions: [],   // sesi aktif untuk mode OUT
             sharedSpaceSelectedClass: '',
             sharedSpaceSelectedSubject: '',
             sharedSpacePeriod: '',
+            sharedSpaceSelectedSession: '',  // attendance_id untuk mode OUT
 
             startScanner() {
                 startQrVideo(this);
@@ -452,26 +538,33 @@
                 .then(res => res.json().then(data => ({ status: res.status, data })))
                 .then(({ status, data }) => {
                     if (data.is_shared_space) {
-                        this.showSharedSpaceModal = true;
-                        this.sharedSpaceLocation = data.classroom?.name || '';
+                        // Buka modal shared space
+                        this.showSharedSpaceModal  = true;
+                        this.sharedSpaceLocation   = data.classroom?.name || '';
                         this.sharedSpaceLocationId = data.classroom?.id || this.extractClassroomId(qrData);
-                        this.sharedSpaceClasses = data.all_classes || [];
-                        this.sharedSpaceSubjects = data.subjects || [];
-                        this.sharedSpaceSelectedClass = '';
+                        this.sharedSpaceClasses    = data.all_classes || [];
+                        this.sharedSpaceSubjects   = data.subjects || [];
+                        this.sharedSpaceActiveSessions = data.active_sessions || [];
+
+                        // Reset pilihan
+                        this.sharedSpaceSelectedClass   = '';
                         this.sharedSpaceSelectedSubject = '';
-                        this.sharedSpacePeriod = '';
+                        this.sharedSpacePeriod          = '';
+                        this.sharedSpaceSelectedSession = '';
+
                         setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50);
                     } else if (data.schedules) {
+                        // Multiple jadwal reguler → pilih
                         this.showClassSelection = true;
-                        this.selectedLocation = data.message;
-                        this.classSchedules = data.schedules;
+                        this.selectedLocation   = data.message;
+                        this.classSchedules     = data.schedules;
                         setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50);
                     } else {
                         this.handleScanResponse(status, data);
                     }
                 })
                 .catch(() => {
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan' });
+                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
             },
 
@@ -489,48 +582,38 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     },
                     body: JSON.stringify({
-                        qr_data: this.scannedQrData,
-                        mode: this.mode,
+                        qr_data:     this.scannedQrData,
+                        mode:        this.mode,
                         schedule_id: this.selectedScheduleId
                     })
                 })
                 .then(res => res.json().then(data => ({ status: res.status, data })))
                 .then(({ status, data }) => { this.handleScanResponse(status, data); })
                 .catch(() => {
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan' });
+                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
             },
 
+            // Submit presensi MASUK shared space (ON-DEMAND)
             submitSharedSpaceAttendance() {
                 if (!this.sharedSpaceSelectedClass || !this.sharedSpaceSelectedSubject || !this.sharedSpacePeriod) {
-                    this.handleScanResponse(422, { success: false, message: 'Lengkapi kelas, mata pelajaran, dan jam ke-' });
+                    alert('Lengkapi kelas, mata pelajaran, dan jam ke- terlebih dahulu.');
                     return;
                 }
 
-                const url = this.mode === 'in'
-                    ? '{{ route("teacher.class-attendance.save-shared") }}'
-                    : '{{ route("teacher.class-attendance.scan") }}';
-
-                const payload = {
-                    classroom_id: this.sharedSpaceLocationId,
-                    selected_classroom_id: this.sharedSpaceSelectedClass,
-                    subject_id: this.sharedSpaceSelectedSubject,
-                    period: this.sharedSpacePeriod,
-                    check_in_time: new Date().toISOString(),
-                };
-
-                if (this.mode === 'out') {
-                    payload.qr_data = this.scannedQrData;
-                    payload.mode = this.mode;
-                }
-
-                fetch(url, {
+                fetch('{{ route("teacher.class-attendance.save-shared") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        classroom_id:          this.sharedSpaceLocationId,
+                        selected_classroom_id: this.sharedSpaceSelectedClass,
+                        subject_id:            this.sharedSpaceSelectedSubject,
+                        period:                this.sharedSpacePeriod,
+                        mode:                  'in',
+                    })
                 })
                 .then(res => res.json().then(data => ({ status: res.status, data })))
                 .then(({ status, data }) => {
@@ -539,7 +622,37 @@
                 })
                 .catch(() => {
                     this.showSharedSpaceModal = false;
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan' });
+                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
+                });
+            },
+
+            // Submit presensi KELUAR shared space
+            submitSharedSpaceCheckOut() {
+                if (!this.sharedSpaceSelectedSession) {
+                    alert('Pilih sesi yang ingin diselesaikan.');
+                    return;
+                }
+
+                fetch('{{ route("teacher.class-attendance.save-shared") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({
+                        classroom_id:  this.sharedSpaceLocationId,
+                        attendance_id: this.sharedSpaceSelectedSession,
+                        mode:          'out',
+                    })
+                })
+                .then(res => res.json().then(data => ({ status: res.status, data })))
+                .then(({ status, data }) => {
+                    this.showSharedSpaceModal = false;
+                    this.handleScanResponse(status, data);
+                })
+                .catch(() => {
+                    this.showSharedSpaceModal = false;
+                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
             },
 
@@ -547,23 +660,19 @@
                 try {
                     const parsed = JSON.parse(qrData);
                     if (parsed.classroom_id) return parsed.classroom_id;
-                } catch (e) {
-                    console.error('Error parsing QR JSON:', e);
-                }
-
+                } catch (e) {}
                 const parts = String(qrData).split('|');
                 return parts[0] || null;
             },
 
             handleScanResponse(status, data) {
-                this.showResult = true;
-                // Accept status 200, 201, or data.success flag
-                this.resultSuccess = (status >= 200 && status < 300) || (data && data.success);
+                this.showResult    = true;
+                this.resultSuccess = (status >= 200 && status < 300) && data?.success;
                 this.resultMessage = data?.message || 'Terjadi kesalahan sistem';
-                this.resultData = data?.data || null;
-                
+                this.resultData    = data?.data || null;
+
                 if (this.resultSuccess) {
-                    setTimeout(() => window.location.reload(), 3000);
+                    setTimeout(() => window.location.reload(), 2500);
                 }
                 if (window.lucide) lucide.createIcons();
             }
