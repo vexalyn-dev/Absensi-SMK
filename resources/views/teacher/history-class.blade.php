@@ -139,7 +139,9 @@
                             <p class="text-sm font-bold text-navy-800 dark:text-white">{{ $att->classroom->name ?? '-' }}</p>
                         </td>
                         <td class="px-6 py-4">
-                            <p class="text-sm text-slate-700 dark:text-slate-300">{{ $att->teachingSchedule->subject->name ?? '-' }}</p>
+                            <p class="text-sm text-slate-700 dark:text-slate-300">
+                                {{ $att->teachingSchedule?->subject?->name ?? $att->subject?->name ?? '-' }}
+                            </p>
                         </td>
                         <td class="px-6 py-4">
                             <span class="text-sm font-mono text-slate-700 dark:text-slate-300">Jam {{ $att->period }}</span>

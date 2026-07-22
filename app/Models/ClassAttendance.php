@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 class ClassAttendance extends Model
 {
     protected $fillable = [
@@ -46,6 +45,11 @@ class ClassAttendance extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function teachingSchedule(): BelongsTo
+    {
+        return $this->belongsTo(TeachingSchedule::class);
     }
 
     // Helper: Cek apakah presensi lengkap (ada IN & OUT)

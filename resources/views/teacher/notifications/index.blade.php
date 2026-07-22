@@ -460,9 +460,17 @@
         
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
-                const managerEl = document.querySelector('[x-data]');
-                if (managerEl && managerEl.__x) {
-                    managerEl.__x.$data.confirmDelete();
+                // Alpine v3 compatible: gunakan Alpine.$data() bukan __x.$data
+                const managerEl = document.querySelector('[x-data="notificationManager()"]');
+                if (managerEl && window.Alpine) {
+                    try {
+                        const data = window.Alpine.$data(managerEl);
+                        if (data && typeof data.confirmDelete === 'function') {
+                            data.confirmDelete();
+                        }
+                    } catch (e) {
+                        console.error('Alpine $data error:', e);
+                    }
                 }
             });
         }
