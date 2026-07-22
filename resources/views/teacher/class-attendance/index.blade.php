@@ -219,144 +219,187 @@
         </div>
     </div>
 
-    <!-- Shared Space Selection Modal -->
+    <!-- Shared Space Modal — slide-up dari bawah di mobile, center di desktop -->
     <div x-show="showSharedSpaceModal"
-         x-transition
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style="display: none;">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden" @click.away="showSharedSpaceModal = false">
+         x-cloak
+         class="fixed inset-0 z-50 bg-black/50"
+         style="display:none;">
 
-            <!-- Header -->
-            <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+        <!-- Backdrop klik tutup -->
+        <div class="absolute inset-0" @click="showSharedSpaceModal = false"></div>
+
+        <!-- Sheet: full-width di bawah (mobile), max-w-lg centered (desktop) -->
+        <div class="absolute bottom-0 left-0 right-0 sm:static sm:flex sm:items-center sm:justify-center sm:h-full sm:p-4 pointer-events-none">
+            <div class="pointer-events-auto bg-white dark:bg-slate-800 w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col"
+                 style="max-height: 92dvh; max-height: 92vh;"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="translate-y-full sm:translate-y-0 sm:opacity-0 sm:scale-95"
+                 x-transition:enter-end="translate-y-0 sm:opacity-100 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="translate-y-0 sm:opacity-100 sm:scale-100"
+                 x-transition:leave-end="translate-y-full sm:translate-y-0 sm:opacity-0 sm:scale-95"
+                 @click.stop>
+
+                <!-- Drag handle (mobile only) -->
+                <div class="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
+                    <div class="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                </div>
+
+                <!-- Header -->
+                <div class="px-5 pt-3 pb-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="building-2" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-navy-800 dark:text-white leading-tight"
+                                x-text="mode === 'in' ? 'Presensi Masuk' : 'Presensi Keluar'"></h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400" x-text="sharedSpaceLocation"></p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-base font-bold text-navy-800 dark:text-white"
-                            x-text="mode === 'in' ? 'Presensi Masuk - Ruangan Bersama' : 'Presensi Keluar - Ruangan Bersama'"></h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400" x-text="sharedSpaceLocation"></p>
+                    <button @click="showSharedSpaceModal = false"
+                            class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex-shrink-0">
+                        <i data-lucide="x" class="w-4 h-4 text-slate-400"></i>
+                    </button>
+                </div>
+
+                <!-- Scrollable Body -->
+                <div class="overflow-y-auto flex-1 overscroll-contain">
+
+                    <!-- MODE IN body -->
+                    <div x-show="mode === 'in'" class="p-4 space-y-4">
+                        <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                            <p class="text-xs text-green-700 dark:text-green-400 font-medium">
+                                <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>
+                                Pilih kelas, mapel, dan jam yang akan diajar
+                            </p>
+                        </div>
+
+                        <!-- Kelas -->
+                        <div>
+                            <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-1.5">
+                                Kelas <span class="text-red-500">*</span>
+                            </label>
+                            <select x-model="sharedSpaceSelectedClass"
+                                    class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-800 dark:focus:ring-gold-500">
+                                <option value="">Pilih kelas...</option>
+                                <template x-for="cls in sharedSpaceClasses" :key="cls.id">
+                                    <option :value="cls.id" x-text="cls.code ? `${cls.name} (${cls.code})` : cls.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- Mapel -->
+                        <div>
+                            <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-1.5">
+                                Mata Pelajaran <span class="text-red-500">*</span>
+                            </label>
+                            <select x-model="sharedSpaceSelectedSubject"
+                                    class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-800 dark:focus:ring-gold-500">
+                                <option value="">Pilih mata pelajaran...</option>
+                                <template x-for="subject in sharedSpaceSubjects" :key="subject.id">
+                                    <option :value="subject.id" x-text="subject.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- Jam ke- (grid button) -->
+                        <div>
+                            <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-1.5">
+                                Jam Ke- <span class="text-red-500">*</span>
+                                <span class="text-xs font-normal text-slate-400 ml-1">(1–12)</span>
+                            </label>
+                            <div class="grid grid-cols-6 gap-2">
+                                <template x-for="jam in [1,2,3,4,5,6,7,8,9,10,11,12]" :key="jam">
+                                    <button type="button"
+                                            @click="sharedSpacePeriod = jam"
+                                            :class="sharedSpacePeriod == jam
+                                                ? 'bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 ring-2 ring-navy-800 dark:ring-gold-400 font-bold'
+                                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'"
+                                            class="h-10 rounded-lg text-sm transition-all"
+                                            x-text="jam">
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <button @click="showSharedSpaceModal = false" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
-                </button>
-            </div>
 
-            <!-- Body: MODE IN -->
-            <div x-show="mode === 'in'" class="p-5 space-y-4">
-                <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                    <p class="text-xs text-green-700 dark:text-green-400 font-medium">
-                        <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1"></i>
-                        Pilih kelas, mapel, dan jam pelajaran yang akan diajar
-                    </p>
-                </div>
+                    <!-- MODE OUT body -->
+                    <div x-show="mode === 'out'" class="p-4 space-y-3">
+                        <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                            <p class="text-xs text-red-700 dark:text-red-400 font-medium">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5 inline mr-1"></i>
+                                Pilih sesi yang sedang berlangsung
+                            </p>
+                        </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">Kelas yang Diajar <span class="text-red-500">*</span></label>
-                    <select x-model="sharedSpaceSelectedClass"
-                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-800 dark:focus:ring-gold-500">
-                        <option value="">Pilih kelas...</option>
-                        <template x-for="cls in sharedSpaceClasses" :key="cls.id">
-                            <option :value="cls.id" x-text="cls.code ? `${cls.name} (${cls.code})` : cls.name"></option>
-                        </template>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">Mata Pelajaran <span class="text-red-500">*</span></label>
-                    <select x-model="sharedSpaceSelectedSubject"
-                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-800 dark:focus:ring-gold-500">
-                        <option value="">Pilih mata pelajaran...</option>
-                        <template x-for="subject in sharedSpaceSubjects" :key="subject.id">
-                            <option :value="subject.id" x-text="subject.name"></option>
-                        </template>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-navy-800 dark:text-white mb-2">
-                        Jam Ke- <span class="text-red-500">*</span>
-                        <span class="text-xs font-normal text-slate-400 ml-1">(1 – 12)</span>
-                    </label>
-                    <div class="flex gap-2 flex-wrap">
-                        <template x-for="jam in [1,2,3,4,5,6,7,8,9,10,11,12]" :key="jam">
-                            <button type="button"
-                                    @click="sharedSpacePeriod = jam"
-                                    :class="sharedSpacePeriod == jam
-                                        ? 'bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 ring-2 ring-navy-800 dark:ring-gold-400'
-                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'"
-                                    class="w-10 h-10 rounded-lg text-sm font-bold transition-all"
-                                    x-text="jam">
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Body: MODE OUT — tampilkan sesi aktif yang bisa dipilih -->
-            <div x-show="mode === 'out'" class="p-5 space-y-4">
-                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-                    <p class="text-xs text-red-700 dark:text-red-400 font-medium">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5 inline mr-1"></i>
-                        Pilih sesi yang sedang berlangsung untuk diselesaikan
-                    </p>
-                </div>
-
-                <!-- Ada sesi aktif → tampilkan kartu -->
-                <template x-if="sharedSpaceActiveSessions.length > 0">
-                    <div class="space-y-2">
-                        <template x-for="session in sharedSpaceActiveSessions" :key="session.id">
-                            <div class="p-4 rounded-xl border-2 cursor-pointer transition-all"
-                                 :class="sharedSpaceSelectedSession == session.id
-                                     ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
-                                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'"
-                                 @click="sharedSpaceSelectedSession = session.id">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="font-bold text-sm text-navy-800 dark:text-white" x-text="session.classroom_name"></p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400" x-text="session.subject_name + ' • Jam ke-' + session.period"></p>
+                        <template x-if="sharedSpaceActiveSessions.length > 0">
+                            <div class="space-y-2">
+                                <template x-for="session in sharedSpaceActiveSessions" :key="session.id">
+                                    <div class="p-3.5 rounded-xl border-2 cursor-pointer transition-all active:scale-[.98]"
+                                         :class="sharedSpaceSelectedSession == session.id
+                                             ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+                                             : 'border-slate-200 dark:border-slate-700'"
+                                         @click="sharedSpaceSelectedSession = session.id">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="min-w-0">
+                                                <p class="font-bold text-sm text-navy-800 dark:text-white truncate" x-text="session.classroom_name"></p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate"
+                                                   x-text="session.subject_name + ' • Jam ke-' + session.period"></p>
+                                            </div>
+                                            <div class="text-right flex-shrink-0">
+                                                <p class="text-xs font-semibold text-slate-600 dark:text-slate-300"
+                                                   x-text="'Masuk ' + session.check_in_time"></p>
+                                                <p class="text-[10px] text-slate-400"
+                                                   x-text="session.duration_minutes + ' mnt'"></p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-right flex-shrink-0 ml-3">
-                                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-300" x-text="'Masuk ' + session.check_in_time"></p>
-                                        <p class="text-[10px] text-slate-400" x-text="session.duration_minutes + ' menit berlangsung'"></p>
-                                    </div>
-                                </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="sharedSpaceActiveSessions.length === 0">
+                            <div class="text-center py-8">
+                                <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ada sesi aktif.</p>
+                                <p class="text-xs text-slate-400 mt-1">Scan masuk terlebih dahulu.</p>
                             </div>
                         </template>
                     </div>
-                </template>
 
-                <!-- Tidak ada sesi aktif -->
-                <template x-if="sharedSpaceActiveSessions.length === 0">
-                    <div class="text-center py-8">
-                        <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ada sesi aktif di ruangan ini.</p>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Lakukan scan masuk terlebih dahulu.</p>
-                    </div>
-                </template>
-            </div>
+                </div><!-- /scrollable body -->
 
-            <!-- Footer -->
-            <div class="p-5 border-t border-slate-200 dark:border-slate-700">
-                <!-- Tombol IN -->
-                <template x-if="mode === 'in'">
-                    <button @click="submitSharedSpaceAttendance()"
-                            :disabled="!sharedSpaceSelectedClass || !sharedSpaceSelectedSubject || !sharedSpacePeriod"
-                            class="w-full px-6 py-3 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="log-in" class="w-4 h-4"></i>
-                        Simpan Presensi Masuk
-                    </button>
-                </template>
-                <!-- Tombol OUT -->
-                <template x-if="mode === 'out'">
-                    <button @click="submitSharedSpaceCheckOut()"
-                            :disabled="!sharedSpaceSelectedSession && sharedSpaceActiveSessions.length > 0"
-                            class="w-full px-6 py-3 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
-                            x-show="sharedSpaceActiveSessions.length > 0">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                        Selesaikan Sesi Ini
-                    </button>
-                </template>
+                <!-- Footer (sticky) -->
+                <div class="px-4 py-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0"
+                     style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))">
+                    <template x-if="mode === 'in'">
+                        <button @click="submitSharedSpaceAttendance()"
+                                :disabled="!sharedSpaceSelectedClass || !sharedSpaceSelectedSubject || !sharedSpacePeriod"
+                                class="w-full py-3.5 bg-green-500 hover:bg-green-600 active:bg-green-700
+                                       disabled:opacity-40 disabled:cursor-not-allowed
+                                       text-white rounded-xl font-bold text-sm
+                                       flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            Simpan Presensi Masuk
+                        </button>
+                    </template>
+                    <template x-if="mode === 'out'">
+                        <div>
+                            <button x-show="sharedSpaceActiveSessions.length > 0"
+                                    @click="submitSharedSpaceCheckOut()"
+                                    :disabled="!sharedSpaceSelectedSession"
+                                    class="w-full py-3.5 bg-red-500 hover:bg-red-600 active:bg-red-700
+                                           disabled:opacity-40 disabled:cursor-not-allowed
+                                           text-white rounded-xl font-bold text-sm
+                                           flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                Selesaikan Sesi Ini
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
             </div>
         </div>
     </div>
@@ -412,6 +455,8 @@
     let _qrStream = null;
     let _qrScanning = false;
     let _qrAlpine = null;
+    let _lastTickTime = 0;
+    const _QR_INTERVAL_MS = 80; // ~12 fps decode — cukup cepat, tidak block UI
     const _qrCanvas = document.createElement('canvas');
     const _qrCtx = _qrCanvas.getContext('2d', { willReadFrequently: true });
     const _qrCanvas2 = document.createElement('canvas');
@@ -430,22 +475,30 @@
         const idle  = document.getElementById('qr-idle-overlay');
         const scanOverlay = document.getElementById('qr-scan-overlay');
 
+        // Resolusi lebih rendah = startup lebih cepat di HP
+        // ideal 1280 sudah cukup untuk QR scan, 1920 justru lambat di mobile
         navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment', width: { ideal: 1920, min: 640 }, height: { ideal: 1080, min: 480 } }
+            video: {
+                facingMode: { ideal: 'environment' },
+                width:  { ideal: 1280, min: 480 },
+                height: { ideal: 720,  min: 360 },
+            }
         })
-            .then(stream => {
-                _qrStream = stream;
-                video.srcObject = stream;
-                video.play();
-                idle.classList.add('hidden');
-                scanOverlay.classList.remove('hidden');
-                _qrScanning = true;
-                alpineCtx.scanning = true;
-                requestAnimationFrame(tickQr);
-            })
-            .catch(() => {
-                alert('Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.');
-            });
+        .then(stream => {
+            _qrStream = stream;
+            video.srcObject = stream;
+            video.play();
+            idle.classList.add('hidden');
+            scanOverlay.classList.remove('hidden');
+            _qrScanning = true;
+            alpineCtx.scanning = true;
+            _lastTickTime = 0;
+            requestAnimationFrame(tickQr);
+        })
+        .catch(err => {
+            console.error('Camera error:', err);
+            alert('Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.');
+        });
     }
 
     function stopQrVideo(alpineCtx) {
@@ -461,23 +514,31 @@
         if (alpineCtx) alpineCtx.scanning = false;
     }
 
-    function tickQr() {
+    function tickQr(ts) {
         if (!_qrScanning) return;
+
+        // Throttle: decode max ~12x/detik agar tidak block JS thread
+        if (ts - _lastTickTime < _QR_INTERVAL_MS) {
+            requestAnimationFrame(tickQr);
+            return;
+        }
+        _lastTickTime = ts;
+
         const video = document.getElementById('qr-video');
         if (!video || video.readyState < 2) { requestAnimationFrame(tickQr); return; }
 
         const vw = video.videoWidth, vh = video.videoHeight;
         if (!vw || !vh) { requestAnimationFrame(tickQr); return; }
 
-        // Pass 1: full frame downsampled to 640px wide — fast detection
-        const scale = Math.min(1, 640 / vw);
+        // Pass 1: full frame downsampled to 400px — cepat, cocok untuk QR jauh
+        const scale = Math.min(1, 400 / vw);
         let code = _tryDecode(_qrCanvas, _qrCtx, video, 0, 0, vw, vh, Math.round(vw * scale), Math.round(vh * scale));
 
-        // Pass 2: center 60% crop — catches close-up / off-center QR
+        // Pass 2: center crop 60% — QR dekat / miring
         if (!code) {
             const cx = Math.round(vw * 0.2), cy = Math.round(vh * 0.2);
             const cw = Math.round(vw * 0.6), ch = Math.round(vh * 0.6);
-            const dw = Math.min(cw, 480);
+            const dw = Math.min(cw, 360);
             code = _tryDecode(_qrCanvas2, _qrCtx2, video, cx, cy, cw, ch, dw, Math.round(ch * dw / cw));
         }
 
@@ -527,34 +588,21 @@
             processScan(qrData) {
                 this.scannedQrData = qrData;
 
-                fetch('{{ route("teacher.class-attendance.scan") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                    body: JSON.stringify({ qr_data: qrData, mode: this.mode })
-                })
-                .then(res => res.json().then(data => ({ status: res.status, data })))
+                this._post('{{ route("teacher.class-attendance.scan") }}', { qr_data: qrData, mode: this.mode })
                 .then(({ status, data }) => {
                     if (data.is_shared_space) {
-                        // Buka modal shared space
-                        this.showSharedSpaceModal  = true;
-                        this.sharedSpaceLocation   = data.classroom?.name || '';
-                        this.sharedSpaceLocationId = data.classroom?.id || this.extractClassroomId(qrData);
-                        this.sharedSpaceClasses    = data.all_classes || [];
-                        this.sharedSpaceSubjects   = data.subjects || [];
-                        this.sharedSpaceActiveSessions = data.active_sessions || [];
-
-                        // Reset pilihan
+                        this.showSharedSpaceModal       = true;
+                        this.sharedSpaceLocation        = data.classroom?.name || '';
+                        this.sharedSpaceLocationId      = data.classroom?.id || this.extractClassroomId(qrData);
+                        this.sharedSpaceClasses         = data.all_classes || [];
+                        this.sharedSpaceSubjects        = data.subjects || [];
+                        this.sharedSpaceActiveSessions  = data.active_sessions || [];
                         this.sharedSpaceSelectedClass   = '';
                         this.sharedSpaceSelectedSubject = '';
                         this.sharedSpacePeriod          = '';
                         this.sharedSpaceSelectedSession = '';
-
                         setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50);
                     } else if (data.schedules) {
-                        // Multiple jadwal reguler → pilih
                         this.showClassSelection = true;
                         this.selectedLocation   = data.message;
                         this.classSchedules     = data.schedules;
@@ -562,9 +610,6 @@
                     } else {
                         this.handleScanResponse(status, data);
                     }
-                })
-                .catch(() => {
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
             },
 
@@ -575,23 +620,12 @@
             },
 
             processScanWithSchedule() {
-                fetch('{{ route("teacher.class-attendance.scan") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                    body: JSON.stringify({
-                        qr_data:     this.scannedQrData,
-                        mode:        this.mode,
-                        schedule_id: this.selectedScheduleId
-                    })
+                this._post('{{ route("teacher.class-attendance.scan") }}', {
+                    qr_data:     this.scannedQrData,
+                    mode:        this.mode,
+                    schedule_id: this.selectedScheduleId
                 })
-                .then(res => res.json().then(data => ({ status: res.status, data })))
-                .then(({ status, data }) => { this.handleScanResponse(status, data); })
-                .catch(() => {
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
-                });
+                .then(({ status, data }) => { this.handleScanResponse(status, data); });
             },
 
             // Submit presensi MASUK shared space (ON-DEMAND)
@@ -600,29 +634,16 @@
                     alert('Lengkapi kelas, mata pelajaran, dan jam ke- terlebih dahulu.');
                     return;
                 }
-
-                fetch('{{ route("teacher.class-attendance.save-shared") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                    body: JSON.stringify({
-                        classroom_id:          this.sharedSpaceLocationId,
-                        selected_classroom_id: this.sharedSpaceSelectedClass,
-                        subject_id:            this.sharedSpaceSelectedSubject,
-                        period:                this.sharedSpacePeriod,
-                        mode:                  'in',
-                    })
+                this._post('{{ route("teacher.class-attendance.save-shared") }}', {
+                    classroom_id:          this.sharedSpaceLocationId,
+                    selected_classroom_id: this.sharedSpaceSelectedClass,
+                    subject_id:            this.sharedSpaceSelectedSubject,
+                    period:                this.sharedSpacePeriod,
+                    mode:                  'in',
                 })
-                .then(res => res.json().then(data => ({ status: res.status, data })))
                 .then(({ status, data }) => {
                     this.showSharedSpaceModal = false;
                     this.handleScanResponse(status, data);
-                })
-                .catch(() => {
-                    this.showSharedSpaceModal = false;
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
             },
 
@@ -632,28 +653,50 @@
                     alert('Pilih sesi yang ingin diselesaikan.');
                     return;
                 }
-
-                fetch('{{ route("teacher.class-attendance.save-shared") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                    body: JSON.stringify({
-                        classroom_id:  this.sharedSpaceLocationId,
-                        attendance_id: this.sharedSpaceSelectedSession,
-                        mode:          'out',
-                    })
+                this._post('{{ route("teacher.class-attendance.save-shared") }}', {
+                    classroom_id:  this.sharedSpaceLocationId,
+                    attendance_id: this.sharedSpaceSelectedSession,
+                    mode:          'out',
                 })
-                .then(res => res.json().then(data => ({ status: res.status, data })))
                 .then(({ status, data }) => {
                     this.showSharedSpaceModal = false;
                     this.handleScanResponse(status, data);
-                })
-                .catch(() => {
-                    this.showSharedSpaceModal = false;
-                    this.handleScanResponse(500, { success: false, message: 'Terjadi kesalahan jaringan.' });
                 });
+            },
+
+            // ─── Safe fetch helper: selalu resolve, tidak pernah crash ───────
+            _post(url, payload) {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                return fetch(url, {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type':     'application/json',
+                        'X-CSRF-TOKEN':     csrf,
+                        'Accept':           'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(res => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return res.json().then(data => ({ status: res.status, data }));
+                    }
+                    // Server return HTML (mis. 419 CSRF expired, 500 debug page)
+                    return res.text().then(text => ({
+                        status: res.status,
+                        data: {
+                            success: false,
+                            message: res.status === 419
+                                ? 'Sesi habis, silakan refresh halaman.'
+                                : `Server error (${res.status}). Coba refresh halaman.`,
+                        }
+                    }));
+                })
+                .catch(err => ({
+                    status: 0,
+                    data: { success: false, message: 'Tidak ada koneksi internet atau server tidak dapat dijangkau.' }
+                }));
             },
 
             extractClassroomId(qrData) {
