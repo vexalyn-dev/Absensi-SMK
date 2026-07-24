@@ -327,7 +327,7 @@
                             <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                                 <span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black"
                                       :class="sharedSpaceSelectedClass?'bg-emerald-500 text-white':'bg-slate-200 dark:bg-slate-700 text-slate-500'">
-                                    <template x-if="sharedSpaceSelectedClass"><i data-lucide="check" class="w-2.5 h-2.5"></i></template>
+                                    <template x-if="sharedSpaceSelectedClass"><svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg></template>>
                                     <span x-show="!sharedSpaceSelectedClass">1</span>
                                 </span>
                                 Kelas <span class="text-red-400 normal-case font-normal">*</span>
@@ -591,21 +591,41 @@
                                 <div class="space-y-2.5">
                                     <template x-for="session in sharedSpaceActiveSessions" :key="session.id">
                                         <div class="relative rounded-2xl border-2 cursor-pointer overflow-hidden transition-all duration-200 active:scale-[.98]"
-                                             :class="sharedSpaceSelectedSession==session.id?'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-900/20 shadow-md shadow-emerald-500/10':'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-600'"
+                                             :class="sharedSpaceSelectedSession==session.id
+                                                 ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-900/20 shadow-md'
+                                                 : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-600'"
                                              @click="sharedSpaceSelectedSession = session.id">
-                                            <div x-show="sharedSpaceSelectedSession==session.id" class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl"></div>
+                                            <template x-if="sharedSpaceSelectedSession==session.id">
+                                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl"></div>
+                                            </template>
                                             <div class="flex items-center gap-3 p-4 pl-5">
-                                                <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-black" :class="sharedSpaceSelectedSession==session.id?'bg-emerald-500 text-white shadow-md shadow-emerald-500/25':'bg-slate-100 dark:bg-slate-700 text-slate-500'" x-text="session.classroom_name.slice(0,3).toUpperCase()"></div>
+                                                <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-black"
+                                                     :class="sharedSpaceSelectedSession==session.id ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'"
+                                                     x-text="session.classroom_name.slice(0,3).toUpperCase()"></div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-bold truncate" :class="sharedSpaceSelectedSession==session.id?'text-emerald-700 dark:text-emerald-400':'text-slate-900 dark:text-white'" x-text="session.classroom_name"></p>
-                                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="session.subject_name+' · Jam ke-'+session.period"></p>
+                                                    <p class="text-sm font-bold truncate"
+                                                       :class="sharedSpaceSelectedSession==session.id ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-900 dark:text-white'"
+                                                       x-text="session.classroom_name"></p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate"
+                                                       x-text="session.subject_name+' · Jam ke-'+session.period"></p>
                                                     <div class="flex items-center gap-2 mt-1">
-                                                        <span class="text-[10px] text-slate-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i><span x-text="'Masuk '+session.check_in_time"></span></span>
-                                                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full" :class="session.duration_minutes>=30?'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400':'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'" x-text="session.duration_minutes+' mnt'"></span>
+                                                        <span class="text-[10px] text-slate-400 flex items-center gap-1">
+                                                            <!-- clock icon -->
+                                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                                            <span x-text="'Masuk '+session.check_in_time"></span>
+                                                        </span>
+                                                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                                              :class="session.duration_minutes>=30
+                                                                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                                                  : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'"
+                                                              x-text="session.duration_minutes+' mnt'"></span>
                                                     </div>
                                                 </div>
-                                                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0" :class="sharedSpaceSelectedSession==session.id?'border-emerald-500 bg-emerald-500':'border-slate-300 dark:border-slate-600'">
-                                                    <i data-lucide="check" class="w-3.5 h-3.5 text-white" x-show="sharedSpaceSelectedSession==session.id"></i>
+                                                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0"
+                                                     :class="sharedSpaceSelectedSession==session.id ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 dark:border-slate-600'">
+                                                    <template x-if="sharedSpaceSelectedSession==session.id">
+                                                        <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
@@ -616,7 +636,10 @@
                         <template x-if="sharedSpaceActiveSessions.length === 0">
                             <div class="text-center py-12">
                                 <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <i data-lucide="inbox" class="w-8 h-8 text-slate-400 dark:text-slate-500"></i>
+                                    <!-- inbox icon -->
+                                    <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z"/>
+                                    </svg>
                                 </div>
                                 <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak Ada Sesi Aktif</p>
                                 <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Lakukan scan masuk terlebih dahulu</p>
@@ -628,15 +651,18 @@
                 </div><!-- /scrollable body -->
 
                 <!-- ── Footer ── -->
-                <div class="flex-shrink-0 px-5 py-4 border-t border-slate-100 dark:border-slate-800"
+                <div class="flex-shrink-0 px-5 py-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sm:rounded-b-[2rem]"
                      style="padding-bottom:calc(1rem + env(safe-area-inset-bottom))">
                     <template x-if="mode === 'in'">
                         <button @click="submitSharedSpaceAttendance()"
                                 :disabled="!sharedSpaceSelectedClass || !sharedSpaceSelectedSubject || !sharedSpacePeriod"
                                 class="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200
                                        bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-lg shadow-emerald-500/25
-                                       disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:bg-emerald-500">
-                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                                       disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+                            <!-- log-in icon -->
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
+                            </svg>
                             Simpan Presensi Masuk
                         </button>
                     </template>
@@ -648,7 +674,10 @@
                                     class="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200
                                            bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-lg shadow-emerald-500/25
                                            disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
-                                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                <!-- check-circle icon -->
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                </svg>
                                 Selesaikan Sesi Ini
                             </button>
                         </div>
