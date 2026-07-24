@@ -265,25 +265,31 @@
 
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <!-- Location icon -->
                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                                 :class="mode === 'in'
-                                     ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30'
-                                     : 'bg-gradient-to-br from-red-400 to-rose-500 shadow-lg shadow-red-500/30'">
-                                <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
+                                 :class="mode==='in' ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30' : 'bg-gradient-to-br from-red-400 to-rose-500 shadow-lg shadow-red-500/30'">
+                                <!-- building-2 icon -->
+                                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/>
+                                </svg>
                             </div>
                             <div class="min-w-0">
                                 <h3 class="text-base font-extrabold text-slate-900 dark:text-white leading-tight truncate"
-                                    x-text="mode === 'in' ? 'Presensi Masuk Kelas' : 'Presensi Keluar Kelas'"></h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate flex items-center gap-1">
-                                    <i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0"></i>
+                                    x-text="mode==='in' ? 'Presensi Masuk Kelas' : 'Presensi Keluar Kelas'"></h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1 truncate">
+                                    <!-- map-pin icon -->
+                                    <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+                                    </svg>
                                     <span x-text="sharedSpaceLocation || 'Ruangan Bersama'"></span>
                                 </p>
                             </div>
                         </div>
-                        <button @click="showSharedSpaceModal = false"
+                        <button @click="showSharedSpaceModal=false"
                                 class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                            <i data-lucide="x" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                            <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -305,7 +311,9 @@
                                 <div class="flex items-center gap-1.5" :class="i<2?'flex-1':''">
                                     <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0 transition-all"
                                          :class="s.d?'bg-emerald-500 text-white':'bg-slate-200 dark:bg-slate-700 text-slate-500'">
-                                        <i data-lucide="check" class="w-2.5 h-2.5" x-show="s.d"></i>
+                                        <template x-if="s.d">
+                                            <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                                        </template>
                                         <span x-show="!s.d" x-text="i+1"></span>
                                     </div>
                                     <span class="text-[10px] font-semibold hidden sm:block" :class="s.d?'text-emerald-600 dark:text-emerald-400':'text-slate-400'" x-text="s.l"></span>
@@ -474,8 +482,9 @@
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                     <span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black transition-all duration-300"
                                           :class="sharedSpacePeriod?'bg-emerald-500 text-white scale-110':'bg-slate-200 dark:bg-slate-700 text-slate-500'">
-                                        <i data-lucide="check" class="w-2.5 h-2.5" x-show="sharedSpacePeriod"
-                                           x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-50" x-transition:enter-end="opacity-100 scale-100"></i>
+                                        <template x-if="sharedSpacePeriod">
+                                            <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                                        </template>
                                         <span x-show="!sharedSpacePeriod">3</span>
                                     </span>
                                     Jam Ke- <span class="text-red-400 normal-case font-normal">*</span>
@@ -488,18 +497,24 @@
                                 <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
                                     <button type="button" @click="viewMode='grid'"
                                             class="w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
-                                            :class="viewMode==='grid'?'bg-white dark:bg-slate-700 shadow-sm text-emerald-600':'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
-                                        <i data-lucide="grid-2x2" class="w-3.5 h-3.5"></i>
+                                            :class="viewMode==='grid'?'bg-white dark:bg-slate-700 shadow-sm text-emerald-600':'text-slate-400'">
+                                        <!-- grid icon -->
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
+                                        </svg>
                                     </button>
                                     <button type="button" @click="viewMode='list'"
                                             class="w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
-                                            :class="viewMode==='list'?'bg-white dark:bg-slate-700 shadow-sm text-emerald-600':'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
-                                        <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                                            :class="viewMode==='list'?'bg-white dark:bg-slate-700 shadow-sm text-emerald-600':'text-slate-400'">
+                                        <!-- list icon -->
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- GRID VIEW — 6 kolom, kotak kecil compact -->
+                            <!-- GRID VIEW -->
                             <div x-show="viewMode==='grid'"
                                  x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                  x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 scale-95"
@@ -508,19 +523,18 @@
                                     <button type="button" @click="sharedSpacePeriod = jam"
                                             class="relative flex flex-col items-center justify-center rounded-xl font-bold transition-all duration-150 active:scale-90 select-none py-2.5"
                                             :class="sharedSpacePeriod==jam
-                                                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-105 ring-2 ring-white dark:ring-slate-900'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800'">
+                                                ? 'bg-emerald-500 text-white shadow-md scale-105 ring-2 ring-white dark:ring-slate-900'
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600'">
                                         <span class="text-sm leading-none font-extrabold" x-text="jam"></span>
-                                        <span class="text-[8px] leading-none mt-0.5 font-semibold"
-                                              :class="sharedSpacePeriod==jam?'opacity-80':'opacity-40'">JP</span>
-                                        <span x-show="sharedSpacePeriod==jam"
-                                              x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-0" x-transition:enter-end="opacity-100 scale-100"
-                                              class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-white rounded-full border-2 border-emerald-500 shadow-sm"></span>
+                                        <span class="text-[8px] leading-none mt-0.5 font-semibold" :class="sharedSpacePeriod==jam?'opacity-80':'opacity-40'">JP</span>
+                                        <template x-if="sharedSpacePeriod==jam">
+                                            <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-white rounded-full border-2 border-emerald-500 shadow-sm"></span>
+                                        </template>
                                     </button>
                                 </template>
                             </div>
 
-                            <!-- LIST VIEW — baris dengan label lengkap -->
+                            <!-- LIST VIEW -->
                             <div x-show="viewMode==='list'"
                                  x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
                                  x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 translate-y-1"
@@ -529,20 +543,19 @@
                                     <button type="button" @click="sharedSpacePeriod = jam"
                                             class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 active:scale-95 text-left border"
                                             :class="sharedSpacePeriod==jam
-                                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/25'
-                                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'">
-                                        <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black transition-all"
+                                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-300 dark:hover:border-emerald-700'">
+                                        <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black"
                                              :class="sharedSpacePeriod==jam?'bg-white/20':'bg-slate-200 dark:bg-slate-700'">
                                             <span x-text="jam"></span>
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-bold leading-none" x-text="'Jam ke-'+jam"></p>
-                                            <p class="text-[9px] mt-0.5 leading-none"
-                                               :class="sharedSpacePeriod==jam?'text-white/70':'text-slate-400'">Jam Pelajaran</p>
+                                            <p class="text-[9px] mt-0.5 leading-none" :class="sharedSpacePeriod==jam?'text-white/70':'text-slate-400'">Jam Pelajaran</p>
                                         </div>
-                                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 flex-shrink-0"
-                                           x-show="sharedSpacePeriod==jam"
-                                           x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-50" x-transition:enter-end="opacity-100 scale-100"></i>
+                                        <template x-if="sharedSpacePeriod==jam">
+                                            <svg class="w-3.5 h-3.5 flex-shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                                        </template>
                                     </button>
                                 </template>
                             </div>
