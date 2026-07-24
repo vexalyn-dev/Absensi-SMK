@@ -271,137 +271,137 @@
 </style>
 
 <script>
+    // Global function: Fetch Report Data via AJAX
+    window.fetchData = function() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const tableContainer = document.getElementById('table-container');
+        
+        // Show loading
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        const reportType = document.getElementById('report-type')?.value || 'daily';
+        const startDate = document.getElementById('start-date')?.value || '';
+        const endDate = document.getElementById('end-date')?.value || '';
+        const search = document.getElementById('search-input')?.value || '';
+        
+        const params = new URLSearchParams({
+            report_type: reportType,
+            start_date: startDate,
+            end_date: endDate,
+            search: search,
+            view_mode: '{{ $viewMode }}',
+            _token: document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+        });
+
+        fetch('{{ route("reports.index") }}?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.html !== undefined) {
+                // Update table with loading overlay preserved
+                const loadingElement = tableContainer.querySelector('#loading-overlay');
+                tableContainer.innerHTML = data.html;
+                if (loadingElement) {
+                    tableContainer.insertBefore(loadingElement, tableContainer.firstChild);
+                }
+                
+                // Update stats
+                if (data.totalAbsensi !== undefined) document.getElementById('stat-total').textContent = data.totalAbsensi;
+                if (data.stats) {
+                    document.getElementById('stat-hadir').textContent = data.stats.hadir;
+                    document.getElementById('stat-terlambat').textContent = data.stats.terlambat;
+                    document.getElementById('stat-alpha').textContent = data.stats.alpha + data.stats.izin + data.stats.sakit;
+                }
+                if (data.kehadiranRate !== undefined) document.getElementById('stat-rate').textContent = data.kehadiranRate + '% tingkat kehadiran';
+
+                if (window.lucide) lucide.createIcons();
+            }
+            
+            // Hide loading
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            // Hide loading on error
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        });
+    };
+    
+    // Global function: Change view mode (Harian/Mingguan/Bulanan)
+    window.changeViewMode = function(mode) {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        // Show loading
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        const reportType = document.getElementById('report-type')?.value || 'daily';
+        const search = document.getElementById('search-input')?.value || '';
+        
+        // Calculate dates based on view mode
+        let startDate = '';
+        if (mode === 'daily') {
+            startDate = new Date().toISOString().split('T')[0];
+        } else if (mode === 'weekly') {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            startDate = new Date(now.setDate(diff)).toISOString().split('T')[0];
+        } else {
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        }
+        
+        const params = new URLSearchParams({
+            report_type: reportType,
+            view_mode: mode,
+            start_date: startDate,
+            search: search,
+            _token: document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+        });
+
+        window.location.href = '{{ route("reports.index") }}?' + params.toString();
+    };
+
+    // Global function: Export report with live filter values
+    window.exportReport = function(type) {
+        const startDate = document.getElementById('start-date')?.value || '';
+        const endDate = document.getElementById('end-date')?.value || '';
+        const search = document.getElementById('search-input')?.value || '';
+        
+        const params = new URLSearchParams({
+            report_type: type,
+            view_mode: '{{ $viewMode }}',
+            start_date: startDate,
+            end_date: endDate,
+            search: search
+        });
+        
+        window.location.href = '{{ route("reports.export") }}?' + params.toString();
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
 
-        // AJAX search
+        // AJAX search debounce
         let searchTimeout;
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
-                    fetchData();
+                    window.fetchData();
                 }, 500);
             });
         }
-
-        // Make fetchData global for Alpine.js and onchange events
-        window.fetchData = function() {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const tableContainer = document.getElementById('table-container');
-            
-            // Show loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'flex';
-            }
-            
-            const reportType = document.getElementById('report-type')?.value || 'daily';
-            const startDate = document.getElementById('start-date')?.value || '';
-            const endDate = document.getElementById('end-date')?.value || '';
-            const search = document.getElementById('search-input')?.value || '';
-            
-            const params = new URLSearchParams({
-                report_type: reportType,
-                start_date: startDate,
-                end_date: endDate,
-                search: search,
-                view_mode: '{{ $viewMode }}',
-                _token: document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-            });
-
-            fetch('{{ route("reports.index") }}?' + params.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.html !== undefined) {
-                    // Update table with loading overlay preserved
-                    const loadingElement = tableContainer.querySelector('#loading-overlay');
-                    tableContainer.innerHTML = data.html;
-                    if (loadingElement) {
-                        tableContainer.insertBefore(loadingElement, tableContainer.firstChild);
-                    }
-                    
-                    // Update stats
-                    if (data.totalAbsensi !== undefined) document.getElementById('stat-total').textContent = data.totalAbsensi;
-                    if (data.stats) {
-                        document.getElementById('stat-hadir').textContent = data.stats.hadir;
-                        document.getElementById('stat-terlambat').textContent = data.stats.terlambat;
-                        document.getElementById('stat-alpha').textContent = data.stats.alpha + data.stats.izin + data.stats.sakit;
-                    }
-                    if (data.kehadiranRate !== undefined) document.getElementById('stat-rate').textContent = data.kehadiranRate + '% tingkat kehadiran';
-
-                    if (window.lucide) lucide.createIcons();
-                }
-                
-                // Hide loading
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Hide loading on error
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            });
-        };
-        
-        // Make fetchData available for Alpine.js
-        window.reportFetchData = window.fetchData;
-        
-        // Change view mode function (Harian/Mingguan/Bulanan) dengan AJAX
-        window.changeViewMode = function(mode) {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            
-            // Show loading
-            if (loadingOverlay) {
-                loadingOverlay.classList.remove('hidden');
-            }
-            
-            const reportType = document.getElementById('report-type')?.value || 'daily';
-            const search = document.getElementById('search-input')?.value || '';
-            
-            // Calculate dates based on view mode
-            let startDate = '';
-            if (mode === 'daily') {
-                startDate = new Date().toISOString().split('T')[0];
-            } else if (mode === 'weekly') {
-                const now = new Date();
-                const dayOfWeek = now.getDay();
-                const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                startDate = new Date(now.setDate(diff)).toISOString().split('T')[0];
-            } else {
-                const now = new Date();
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            }
-            
-            const params = new URLSearchParams({
-                report_type: reportType,
-                view_mode: mode,
-                start_date: startDate,
-                search: search,
-                _token: document.querySelector('meta[name="csrf-token"]').content
-            });
-
-        // Export report function with live filter values
-        window.exportReport = function(type) {
-            const startDate = document.getElementById('start-date')?.value || '';
-            const endDate = document.getElementById('end-date')?.value || '';
-            const search = document.getElementById('search-input')?.value || '';
-            
-            const params = new URLSearchParams({
-                report_type: type,
-                view_mode: '{{ $viewMode }}',
-                start_date: startDate,
-                end_date: endDate,
-                search: search
-            });
-            
-            window.location.href = '{{ route("reports.export") }}?' + params.toString();
-        };
     });
 </script>
 

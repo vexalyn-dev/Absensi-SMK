@@ -26,6 +26,11 @@ class TeachingSchedule extends Model
         'is_active' => 'boolean'
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function teacher()
     {
         return $this->belongsTo(User::class, 'user_id');
