@@ -89,8 +89,8 @@
         <h3 class="text-base font-bold text-navy-800 dark:text-white mb-4">Scan QR Code</h3>
 
         <!-- Camera Viewport -->
-        <div class="flex justify-center">
-            <div class="relative rounded-2xl overflow-hidden bg-slate-900 w-full max-w-[320px] sm:max-w-[360px] aspect-square shadow-inner">
+        <div class="flex justify-center mb-4">
+            <div class="relative rounded-2xl overflow-hidden bg-slate-900 w-full max-w-[320px] sm:max-w-[360px] h-[320px] sm:h-[360px] shadow-inner">
                 <!-- Video feed -->
                 <video id="qr-video" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
 
@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap gap-2 mt-4 max-w-xs sm:max-w-md mx-auto">
+        <div class="flex gap-2 max-w-xs sm:max-w-sm mx-auto">
             <button @click="startScanner()" x-show="!scanning"
                     class="flex-1 px-4 py-3 bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 shadow-md active:scale-95">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -136,14 +136,6 @@
                 </svg>
                 <span>Stop Scan</span>
             </button>
-            <button type="button" @click="document.getElementById('qr-file-input-class').click()"
-                    class="px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                </svg>
-                <span>Unggah QR</span>
-            </button>
-            <input type="file" id="qr-file-input-class" accept="image/*" class="hidden" @change="uploadImage($event)">
         </div>
     </div>
 
@@ -926,31 +918,6 @@
 
             stopScanner() {
                 stopQrVideo(this);
-            },
-
-            uploadImage(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
-                        if (code && code.data) {
-                            this.processScan(code.data);
-                        } else {
-                            alert('QR Code tidak terdeteksi dalam gambar yang diunggah.');
-                        }
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
             },
 
             processScan(qrData) {

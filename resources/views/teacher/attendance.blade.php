@@ -200,22 +200,13 @@
                     <!-- Hidden Canvas for jsQR -->
                     <canvas id="qr-canvas" class="hidden"></canvas>
 
-                    <!-- Camera Control Actions & Upload -->
-                    <div class="flex flex-wrap items-center justify-between gap-3">
+                    <!-- Camera Control Actions -->
+                    <div class="flex items-center justify-center gap-3">
                         <button type="button" x-show="scanning" @click="stopCamera(); scanning = false"
-                                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-                            <i data-lucide="stop-circle" class="w-4 h-4"></i>
+                                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                            <i data-lucide="stop-circle" class="w-5 h-5"></i>
                             Hentikan Kamera
                         </button>
-                        
-                        <div class="flex items-center gap-2 ml-auto">
-                            <button type="button" onclick="document.getElementById('file-qr-input').click()"
-                                    class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition-all flex items-center gap-2">
-                                <i data-lucide="image" class="w-4 h-4"></i>
-                                Unggah Gambar QR
-                            </button>
-                            <input type="file" id="file-qr-input" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
-                        </div>
                     </div>
 
                     <!-- Scan Confirmation Card -->
@@ -363,22 +354,40 @@
             }, err => console.log('Location access denied or unavailable'));
         }
 
-        navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
-        })
-        .then(stream => {
-            videoStream = stream;
-            video.srcObject = stream;
-            isCameraActive = true;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Akses kamera tidak didukung di peramban ini atau membutuhkan koneksi HTTPS.');
+            return;
+        }
 
-            idleOverlay.classList.add('hidden');
-            scanningOverlay.classList.remove('hidden');
+        const constraintsList = [
+            { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+            { video: { facingMode: 'environment' } },
+            { video: true }
+        ];
 
-            requestAnimationFrame(scanFrame);
-        })
-        .catch(err => {
-            alert('Gagal mengakses kamera: ' + err.message);
-        });
+        function tryNextConstraint(index) {
+            if (index >= constraintsList.length) {
+                alert('Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.');
+                return;
+            }
+            navigator.mediaDevices.getUserMedia(constraintsList[index])
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+                isCameraActive = true;
+
+                if (idleOverlay) idleOverlay.classList.add('hidden');
+                if (scanningOverlay) scanningOverlay.classList.remove('hidden');
+
+                requestAnimationFrame(scanFrame);
+            })
+            .catch(err => {
+                console.warn('Camera constraint index ' + index + ' failed:', err);
+                tryNextConstraint(index + 1);
+            });
+        }
+
+        tryNextConstraint(0);
     }
 
     function stopCamera() {
@@ -419,35 +428,6 @@
         }
 
         setTimeout(() => requestAnimationFrame(scanFrame), 150);
-    }
-
-    function handleImageUpload(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('qr-canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                        inversionAttempts: 'attemptBoth'
-                    });
-
-                    if (code && code.data) {
-                        handleScannedData(code.data);
-                    } else {
-                        alert('QR Code tidak ditemukan dalam gambar ini.');
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
     }
 
     function handleScannedData(qrData) {
