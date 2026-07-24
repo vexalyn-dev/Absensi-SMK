@@ -16,11 +16,11 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pantau dan filter data kehadiran guru</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <a :href="getExportUrl()" 
                class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                <span>Export CSV</span>
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Export Excel</span>
             </a>
         </div>
     </div>
@@ -229,15 +229,15 @@
                             Semua Status
                         </button>
                         
-                        <template x-for="status in ['Hadir', 'Terlambat', 'Izin', 'Alpha']" :key="status">
+                        <template x-for="status in ['Hadir', 'Tepat Waktu', 'Terlambat', 'Izin', 'Alpha']" :key="status">
                             <button type="button" 
-                                    @click="selectStatus(status); open = false; filterData()"
-                                    class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
-                                    :class="filters.status === status ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
+                                     @click="selectStatus(status); open = false; filterData()"
+                                     class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                                     :class="filters.status === status ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
                                 <i data-lucide="check" class="w-4 h-4 text-navy-600 dark:text-gold-400" x-show="filters.status === status"></i>
                                 <span class="w-2 h-2 rounded-full" 
                                       :class="{
-                                          'bg-green-500': status === 'Hadir',
+                                          'bg-green-500': status === 'Hadir' || status === 'Tepat Waktu',
                                           'bg-yellow-500': status === 'Terlambat',
                                           'bg-blue-500': status === 'Izin',
                                           'bg-red-500': status === 'Alpha'

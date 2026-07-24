@@ -324,11 +324,11 @@
             if (!isNaN(d.getTime())) {
                 const h = String(d.getHours()).padStart(2, '0');
                 const m = String(d.getMinutes()).padStart(2, '0');
-                return `${h}:${m} WIB`;
+                return `${h}:${m}`;
             }
         }
         const match = String(timeStr).match(/(\d{2}:\d{2})/);
-        return match ? `${match[1]} WIB` : `${timeStr} WIB`;
+        return match ? match[1] : timeStr;
     }
 
     function renderClassTable(data) {
