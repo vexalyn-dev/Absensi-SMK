@@ -150,7 +150,7 @@
                             @if($att->check_in_time)
                             <div class="flex items-center gap-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-green-500"></i>
-                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($att->check_in_time)->format('H:i') }}</span>
+                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($att->check_in_time)->format('H:i') }} WIB</span>
                             </div>
                             @else
                             <span class="text-sm text-slate-400">-</span>
@@ -160,7 +160,7 @@
                             @if($att->check_out_time)
                             <div class="flex items-center gap-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-blue-500"></i>
-                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($att->check_out_time)->format('H:i') }}</span>
+                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($att->check_out_time)->format('H:i') }} WIB</span>
                             </div>
                             @else
                             <span class="text-sm text-slate-400">-</span>

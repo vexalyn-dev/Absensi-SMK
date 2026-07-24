@@ -165,7 +165,7 @@ class HistoryController extends Controller
             $att->date_formatted = $date->format('d M Y');
             $att->day_name = $date->locale('id')->isoFormat('dddd');
             $att->classroom_name = $att->classroom->name ?? '-';
-            $att->subject_name = $att->teachingSchedule->subject->name ?? '-';
+            $att->subject_name = $att->teachingSchedule?->subject?->name ?? ($att->subject?->name ?? '-');
             $att->check_in_time = $att->check_in_time ? Carbon::parse($att->check_in_time)->format('H:i') : null;
             $att->check_out_time = $att->check_out_time ? Carbon::parse($att->check_out_time)->format('H:i') : null;
 

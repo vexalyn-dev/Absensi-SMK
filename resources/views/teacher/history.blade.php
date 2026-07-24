@@ -369,7 +369,7 @@
                         ${att.check_in_time ? `
                             <div class="flex items-center gap-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-green-500"></i>
-                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">${att.check_in_time}</span>
+                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">${att.check_in_time} WIB</span>
                             </div>
                         ` : '<span class="text-sm text-slate-400">-</span>'}
                     </td>
@@ -377,7 +377,7 @@
                         ${att.check_out_time ? `
                             <div class="flex items-center gap-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-blue-500"></i>
-                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">${att.check_out_time}</span>
+                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300">${att.check_out_time} WIB</span>
                             </div>
                         ` : '<span class="text-sm text-slate-400">-</span>'}
                     </td>
@@ -429,14 +429,14 @@
                             <i data-lucide="clock" class="w-4 h-4 text-green-500 flex-shrink-0"></i>
                             <div>
                                 <p class="text-[10px] text-slate-500 dark:text-slate-400">Masuk</p>
-                                <p class="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">${att.check_in_time || '-'}</p>
+                                <p class="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">${att.check_in_time ? att.check_in_time + ' WIB' : '-'}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <i data-lucide="clock" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
                             <div>
                                 <p class="text-[10px] text-slate-500 dark:text-slate-400">Keluar</p>
-                                <p class="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">${att.check_out_time || '-'}</p>
+                                <p class="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">${att.check_out_time ? att.check_out_time + ' WIB' : '-'}</p>
                             </div>
                         </div>
                     </div>
