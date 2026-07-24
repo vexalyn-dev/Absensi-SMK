@@ -19,23 +19,23 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('reports.export', ['report_type' => 'daily', 'view_mode' => $viewMode, 'start_date' => $startDate, 'end_date' => $endDate, 'search' => $search]) }}" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            <button type="button" onclick="exportReport('daily')" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer">
                 <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                 <span class="hidden sm:inline">Export Harian</span>
                 <span class="sm:hidden">Harian</span>
-            </a>
-            <a href="{{ route('reports.export', ['report_type' => 'class', 'view_mode' => $viewMode, 'start_date' => $startDate, 'end_date' => $endDate, 'search' => $search]) }}" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500 text-white dark:text-navy-900 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            </button>
+            <button type="button" onclick="exportReport('class')" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-navy-800 to-navy-900 dark:from-gold-400 dark:to-gold-500 text-white dark:text-navy-900 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 <span class="hidden sm:inline">Export Kelas</span>
                 <span class="sm:hidden">Kelas</span>
-            </a>
+            </button>
         </div>
     </div>
 
     <!-- Filter Card -->
-    <div class="card p-5" x-data="{ reportDropdownOpen: false }">
+    <div class="card p-5" x-data="{ reportDropdownOpen: false, currentReportType: '{{ $reportType }}' }">
         <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Cari Nama Guru</label>
@@ -49,19 +49,20 @@
             <!-- Modern Jenis Laporan Dropdown -->
             <div @click.outside="reportDropdownOpen = false">
                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Jenis Laporan</label>
-                <input type="hidden" name="report_type" id="report-type" value="{{ $reportType }}">
+                <input type="hidden" name="report_type" id="report-type" :value="currentReportType">
                 <div class="relative">
                     <button type="button" 
                             @click="reportDropdownOpen = !reportDropdownOpen"
                             class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-800 flex items-center justify-between hover:border-navy-300 dark:hover:border-navy-600 transition-colors">
                         <span class="font-medium flex items-center gap-2">
-                            @if($reportType === 'daily')
+                            <span x-show="currentReportType === 'daily'" class="flex items-center gap-2">
                                 <i data-lucide="calendar-check" class="w-4 h-4 text-navy-600 dark:text-gold-400"></i>
                                 <span>Presensi Harian</span>
-                            @else
+                            </span>
+                            <span x-show="currentReportType === 'class'" class="flex items-center gap-2">
                                 <i data-lucide="school" class="w-4 h-4 text-navy-600 dark:text-gold-400"></i>
                                 <span>Presensi Kelas</span>
-                            @endif
+                            </span>
                         </span>
                         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': reportDropdownOpen}"></i>
                     </button>
@@ -77,16 +78,16 @@
                          class="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden"
                          x-cloak>
                         <button type="button" 
-                                @click="document.getElementById('report-type').value = 'daily'; reportDropdownOpen = false; fetchData()"
+                                @click="currentReportType = 'daily'; document.getElementById('report-type').value = 'daily'; reportDropdownOpen = false; window.fetchData()"
                                 class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-3"
-                                :class="'{{ $reportType }}' === 'daily' ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
+                                :class="currentReportType === 'daily' ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
                             <i data-lucide="calendar-check" class="w-4 h-4 text-navy-600 dark:text-gold-400"></i>
                             <span>Presensi Harian</span>
                         </button>
                         <button type="button" 
-                                @click="document.getElementById('report-type').value = 'class'; reportDropdownOpen = false; fetchData()"
+                                @click="currentReportType = 'class'; document.getElementById('report-type').value = 'class'; reportDropdownOpen = false; window.fetchData()"
                                 class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-3"
-                                :class="'{{ $reportType }}' === 'class' ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
+                                :class="currentReportType === 'class' ? 'bg-navy-50 dark:bg-navy-900/30 text-navy-700 dark:text-navy-300 font-semibold' : 'text-slate-700 dark:text-slate-300'">
                             <i data-lucide="school" class="w-4 h-4 text-navy-600 dark:text-gold-400"></i>
                             <span>Presensi Kelas</span>
                         </button>
@@ -217,7 +218,7 @@
     <!-- Table Container -->
     <div class="card overflow-hidden relative" id="table-container">
         <!-- Modern Premium Loading Overlay -->
-        <div id="loading-overlay" class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/95 backdrop-blur-md z-50" style="display: none; align-items: center; justify-content: center; flex-direction: column;">
+        <div id="loading-overlay" class="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/95 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-800/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center">
             <div class="text-center relative">
                 <!-- Animated Background Circle -->
                 <div class="absolute inset-0 flex items-center justify-center">
@@ -292,7 +293,7 @@
             
             // Show loading
             if (loadingOverlay) {
-                loadingOverlay.classList.remove('hidden');
+                loadingOverlay.style.display = 'flex';
             }
             
             const reportType = document.getElementById('report-type')?.value || 'daily';
@@ -306,7 +307,7 @@
                 end_date: endDate,
                 search: search,
                 view_mode: '{{ $viewMode }}',
-                _token: document.querySelector('meta[name="csrf-token"]').content
+                _token: document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
             });
 
             fetch('{{ route("reports.index") }}?' + params.toString(), {
@@ -314,32 +315,36 @@
             })
             .then(res => res.json())
             .then(data => {
-                // Update table with loading overlay preserved
-                const loadingElement = tableContainer.querySelector('#loading-overlay');
-                tableContainer.innerHTML = data.html;
-                if (loadingElement) {
-                    tableContainer.insertBefore(loadingElement, tableContainer.firstChild);
-                }
-                
-                // Update stats
-                document.getElementById('stat-total').textContent = data.totalAbsensi;
-                document.getElementById('stat-hadir').textContent = data.stats.hadir;
-                document.getElementById('stat-terlambat').textContent = data.stats.terlambat;
-                document.getElementById('stat-alpha').textContent = data.stats.alpha + data.stats.izin + data.stats.sakit;
-                document.getElementById('stat-rate').textContent = data.kehadiranRate + '% tingkat kehadiran';
+                if (data && data.html !== undefined) {
+                    // Update table with loading overlay preserved
+                    const loadingElement = tableContainer.querySelector('#loading-overlay');
+                    tableContainer.innerHTML = data.html;
+                    if (loadingElement) {
+                        tableContainer.insertBefore(loadingElement, tableContainer.firstChild);
+                    }
+                    
+                    // Update stats
+                    if (data.totalAbsensi !== undefined) document.getElementById('stat-total').textContent = data.totalAbsensi;
+                    if (data.stats) {
+                        document.getElementById('stat-hadir').textContent = data.stats.hadir;
+                        document.getElementById('stat-terlambat').textContent = data.stats.terlambat;
+                        document.getElementById('stat-alpha').textContent = data.stats.alpha + data.stats.izin + data.stats.sakit;
+                    }
+                    if (data.kehadiranRate !== undefined) document.getElementById('stat-rate').textContent = data.kehadiranRate + '% tingkat kehadiran';
 
-                if (window.lucide) lucide.createIcons();
+                    if (window.lucide) lucide.createIcons();
+                }
                 
                 // Hide loading
                 if (loadingOverlay) {
-                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.style.display = 'none';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 // Hide loading on error
                 if (loadingOverlay) {
-                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.style.display = 'none';
                 }
             });
         };
@@ -381,8 +386,21 @@
                 _token: document.querySelector('meta[name="csrf-token"]').content
             });
 
-            // Redirect with params
-            window.location.href = '{{ route("reports.index") }}?' + params.toString();
+        // Export report function with live filter values
+        window.exportReport = function(type) {
+            const startDate = document.getElementById('start-date')?.value || '';
+            const endDate = document.getElementById('end-date')?.value || '';
+            const search = document.getElementById('search-input')?.value || '';
+            
+            const params = new URLSearchParams({
+                report_type: type,
+                view_mode: '{{ $viewMode }}',
+                start_date: startDate,
+                end_date: endDate,
+                search: search
+            });
+            
+            window.location.href = '{{ route("reports.export") }}?' + params.toString();
         };
     });
 </script>

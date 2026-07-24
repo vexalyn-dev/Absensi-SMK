@@ -7,6 +7,7 @@ use App\Models\ClassAttendance;
 use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\TeacherSchedule;
+use App\Models\TeachingSchedule;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -102,60 +103,93 @@ class ReportController extends Controller
         // ============================================
         // 1. HEADER SECTION (Title & Info)
         // ============================================
+        $dateCount = count($dates);
+        $totalCols = ($reportType === 'class' ? 4 : 3) + $dateCount + 5;
+        $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalCols);
+
+        // Header Rows Configuration
+        // Row 1: Logo Row (Height 55)
+        $sheet->getRowDimension(1)->setRowHeight(55);
+        $sheet->mergeCells("A1:{$lastColLetter}1");
+
+        // Row 2: Title Row (Height 28)
+        $sheet->getRowDimension(2)->setRowHeight(28);
+        $sheet->mergeCells("A2:{$lastColLetter}2");
+        $sheet->setCellValue('A2', 'LAPORAN ' . strtoupper($reportType === 'daily' ? 'PRESENSI HARIAN' : 'PRESENSI KELAS') . ' GURU');
+        $sheet->getStyle('A2')->applyFromArray([
+            'font' => [
+                'bold'  => true,
+                'size'  => 15,
+                'color' => ['argb' => 'FF0F172A'],
+                'name'  => 'Segoe UI',
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        // Row 3: Subtitle Row (Height 20)
+        $sheet->getRowDimension(3)->setRowHeight(20);
+        $sheet->mergeCells("A3:{$lastColLetter}3");
+        $sheet->setCellValue('A3', 'SMK ICB CINTA TEKNIKA');
+        $sheet->getStyle('A3')->applyFromArray([
+            'font' => [
+                'bold'  => true,
+                'size'  => 11,
+                'color' => ['argb' => 'FF334155'],
+                'name'  => 'Segoe UI',
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        // Row 4: Info Row (Height 20)
+        $sheet->getRowDimension(4)->setRowHeight(20);
+        $sheet->mergeCells("A4:{$lastColLetter}4");
+        $periodText = Carbon::parse($startDate)->format('d M Y') . ' — ' . Carbon::parse($endDate)->format('d M Y');
+        $sheet->setCellValue('A4', 'Periode Laporan: ' . $periodText . '   |   Mode Tampilan: ' . ucfirst($viewMode));
+        $sheet->getStyle('A4')->applyFromArray([
+            'font' => [
+                'size'  => 10,
+                'italic' => true,
+                'color' => ['argb' => 'FF64748B'],
+                'name'  => 'Segoe UI',
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        // Row 5: Spacer Row (Height 10)
+        $sheet->getRowDimension(5)->setRowHeight(10);
+
+        // Logo Placement Centered in Row 1
         $logoPath = public_path('images/logo.png');
         if (file_exists($logoPath)) {
             $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
             $drawing->setName('Logo ICB CT');
             $drawing->setPath($logoPath);
-            $drawing->setHeight(44);
+            $drawing->setHeight(48);
             $drawing->setCoordinates('A1');
-            $drawing->setOffsetX(5);
-            $drawing->setOffsetY(5);
+            
+            // Calculate approximate total width of columns in pixels for centering logo
+            $approxWidthPx = (6 + 28 + 22 + ($reportType === 'class' ? 18 : 0) + ($dateCount * ($reportType === 'class' ? 10 : 7)) + (5 * 14)) * 7.5;
+            $logoWidthPx = 110;
+            $offsetX = max(10, (int)(($approxWidthPx - $logoWidthPx) / 2));
+            
+            $drawing->setOffsetX($offsetX);
+            $drawing->setOffsetY(4);
             $drawing->setWorksheet($sheet);
         }
-
-        // Title
-        $sheet->setCellValue('B1', 'LAPORAN ' . strtoupper($reportType === 'daily' ? 'PRESENSI HARIAN' : 'PRESENSI KELAS') . ' GURU');
-        $sheet->getStyle('B1')->applyFromArray([
-            'font' => [
-                'bold'  => true,
-                'size'  => 16,
-                'color' => ['argb' => 'FF0F172A'],
-                'name'  => 'Segoe UI',
-            ],
-        ]);
-        $sheet->getStyle('B1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-
-        // Subtitle
-        $sheet->setCellValue('B2', 'SMK ICB CINTA TEKNIKA');
-        $sheet->getStyle('B2')->applyFromArray([
-            'font' => [
-                'bold'  => true,
-                'size'  => 11,
-                'color' => ['argb' => 'FF334155'],
-            ],
-        ]);
-
-        // Periode & Mode
-        $periodText = Carbon::parse($startDate)->format('d M Y') . ' - ' . Carbon::parse($endDate)->format('d M Y');
-        $sheet->setCellValue('B3', 'Periode Laporan: ' . $periodText . '  |  Mode Tampilan: ' . ucfirst($viewMode));
-        $sheet->getStyle('B3')->applyFromArray([
-            'font' => [
-                'size'  => 10,
-                'color' => ['argb' => 'FF64748B'],
-            ],
-        ]);
-
-        // Row heights header
-        $sheet->getRowDimension(1)->setRowHeight(40);
-        $sheet->getRowDimension(2)->setRowHeight(20);
-        $sheet->getRowDimension(3)->setRowHeight(18);
-        $sheet->getRowDimension(4)->setRowHeight(12);
 
         // ============================================
         // 2. TABLE HEADER
         // ============================================
-        $headerRow = 5;
+        $headerRow = 6;
         $sheet->setCellValue('A' . $headerRow, 'No');
         $sheet->setCellValue('B' . $headerRow, 'Nama Guru');
         $sheet->setCellValue('C' . $headerRow, 'Mata Pelajaran');
@@ -171,7 +205,7 @@ class ReportController extends Controller
         }
         
         $summaryStartCol = $col;
-        $sheet->setCellValue(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $headerRow, 'Hadir (H)');
+        $sheet->setCellValue(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $headerRow, $reportType === 'class' ? 'Sesi Hadir (H)' : 'Hadir (H)');
         $col++;
         $sheet->setCellValue(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $headerRow, 'Izin (I)');
         $col++;
@@ -182,7 +216,7 @@ class ReportController extends Controller
         $sheet->setCellValue(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $headerRow, 'Terlambat (T)');
         $lastCol = $col;
 
-        // Header Base Style (Dark Indigo)
+        // Header Base Style (Dark Slate)
         $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($lastCol);
         $headerRange   = 'A' . $headerRow . ':' . $lastColLetter . $headerRow;
         
@@ -231,9 +265,17 @@ class ReportController extends Controller
                 $dateStr   = $date->toDateString();
                 $dayData   = $data['days'][$dateStr] ?? ['code' => '-', 'status' => 'libur'];
                 $code      = $dayData['code'];
+                $label     = $dayData['label'] ?? '';
                 $cellCoord = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($dateCol) . $row;
 
-                $sheet->setCellValue($cellCoord, $code);
+                // Format cell value: for class report show ratios (e.g. H (1/1))
+                if ($reportType === 'class' && $code !== '-' && $label && $label !== '-') {
+                    $cellValue = "{$code} ({$label})";
+                } else {
+                    $cellValue = $code;
+                }
+
+                $sheet->setCellValue($cellCoord, $cellValue);
 
                 // Highlight status cells cleanly
                 $cellStyle = $sheet->getStyle($cellCoord);
@@ -362,8 +404,9 @@ class ReportController extends Controller
         }
         
         $dateStartCol = $reportType === 'class' ? 5 : 4;
+        $dateWidth = $reportType === 'class' ? 10 : 7;
         for ($i = $dateStartCol; $i < $summaryStartCol; $i++) {
-            $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth(7);
+            $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth($dateWidth);
         }
         for ($i = $summaryStartCol; $i <= $lastCol; $i++) {
             $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i))->setWidth(14);
@@ -490,7 +533,7 @@ class ReportController extends Controller
                     $dayOfWeek = $date->dayOfWeek;
                     $isWeekend = in_array($dayOfWeek, [0, 6]);
                     
-                    $schedules = TeacherSchedule::where('user_id', $teacher->id)
+                    $schedules = TeachingSchedule::where('user_id', $teacher->id)
                         ->where('day_of_week', $dayOfWeek)->where('is_active', true)
                         ->with(['classroom', 'subject'])->orderBy('start_time')->get();
 
