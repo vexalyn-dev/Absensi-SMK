@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        <div class="flex gap-2 mt-4 max-w-xs sm:max-w-sm mx-auto">
+        <div class="flex flex-wrap gap-2 mt-4 max-w-xs sm:max-w-md mx-auto">
             <button @click="startScanner()" x-show="!scanning"
                     class="flex-1 px-4 py-3 bg-navy-800 dark:bg-gold-400 text-white dark:text-navy-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 shadow-md active:scale-95">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -136,6 +136,14 @@
                 </svg>
                 <span>Stop Scan</span>
             </button>
+            <button type="button" @click="document.getElementById('qr-file-input-class').click()"
+                    class="px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                </svg>
+                <span>Unggah QR</span>
+            </button>
+            <input type="file" id="qr-file-input-class" accept="image/*" class="hidden" @change="uploadImage($event)">
         </div>
     </div>
 
@@ -784,28 +792,41 @@
         const idle  = document.getElementById('qr-idle-overlay');
         const scanOverlay = document.getElementById('qr-scan-overlay');
 
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: { ideal: 'environment' },
-                width:  { ideal: 1280, min: 480 },
-                height: { ideal: 720,  min: 360 },
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Akses kamera tidak didukung di peramban ini atau membutuhkan jaringan aman (HTTPS). Silakan gunakan tombol "Unggah QR".');
+            return;
+        }
+
+        const constraintsList = [
+            { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+            { video: { facingMode: 'environment' } },
+            { video: true }
+        ];
+
+        function tryNextConstraint(index) {
+            if (index >= constraintsList.length) {
+                alert('Gagal mengakses kamera. Pastikan izin kamera sudah diberikan di peramban Anda atau coba tombol "Unggah QR".');
+                return;
             }
-        })
-        .then(stream => {
-            _qrStream = stream;
-            video.srcObject = stream;
-            video.play();
-            idle.classList.add('hidden');
-            scanOverlay.classList.remove('hidden');
-            _qrScanning = true;
-            alpineCtx.scanning = true;
-            _lastTickTime = 0;
-            requestAnimationFrame(tickQr);
-        })
-        .catch(err => {
-            console.error('Camera error:', err);
-            alert('Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.');
-        });
+            navigator.mediaDevices.getUserMedia(constraintsList[index])
+            .then(stream => {
+                _qrStream = stream;
+                video.srcObject = stream;
+                video.play();
+                if (idle) idle.classList.add('hidden');
+                if (scanOverlay) scanOverlay.classList.remove('hidden');
+                _qrScanning = true;
+                if (alpineCtx) alpineCtx.scanning = true;
+                _lastTickTime = 0;
+                requestAnimationFrame(tickQr);
+            })
+            .catch(err => {
+                console.warn('Camera constraint index ' + index + ' failed:', err);
+                tryNextConstraint(index + 1);
+            });
+        }
+
+        tryNextConstraint(0);
     }
 
     function stopQrVideo(alpineCtx) {
@@ -905,6 +926,31 @@
 
             stopScanner() {
                 stopQrVideo(this);
+            },
+
+            uploadImage(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+                        if (code && code.data) {
+                            this.processScan(code.data);
+                        } else {
+                            alert('QR Code tidak terdeteksi dalam gambar yang diunggah.');
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             },
 
             processScan(qrData) {

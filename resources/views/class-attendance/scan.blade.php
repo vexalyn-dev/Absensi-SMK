@@ -217,32 +217,43 @@
         submitting = false;
         dismissResult();
 
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode:  'environment',
-                width:  { ideal: 1920, min: 640 },
-                height: { ideal: 1080, min: 480 },
-                // Continuous autofocus for sharp QR reads
-                advanced: [{ focusMode: 'continuous' }]
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('Akses kamera tidak didukung di peramban ini atau membutuhkan jaringan HTTPS.', 'error');
+            return;
+        }
+
+        const constraintsList = [
+            { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+            { video: { facingMode: 'environment' } },
+            { video: true }
+        ];
+
+        function tryNextConstraint(index) {
+            if (index >= constraintsList.length) {
+                showToast('Kamera tidak dapat diakses. Pastikan izin kamera sudah diberikan.', 'error');
+                return;
             }
-        })
-        .then(stream => {
-            camStream     = stream;
-            video.srcObject = stream;
-            video.play();
+            navigator.mediaDevices.getUserMedia(constraintsList[index])
+            .then(stream => {
+                camStream     = stream;
+                video.srcObject = stream;
+                video.play();
 
-            document.getElementById('cam-idle').classList.add('hidden');
-            document.getElementById('cam-scan-overlay').classList.remove('hidden');
-            document.getElementById('btn-start').classList.add('hidden');
-            document.getElementById('btn-stop').classList.remove('hidden');
+                document.getElementById('cam-idle').classList.add('hidden');
+                document.getElementById('cam-scan-overlay').classList.remove('hidden');
+                document.getElementById('btn-start').classList.add('hidden');
+                document.getElementById('btn-stop').classList.remove('hidden');
 
-            camScanning = true;
-            requestAnimationFrame(scanTick);
-        })
-        .catch(err => {
-            console.error('Camera error:', err);
-            showToast('Kamera tidak dapat diakses. Pastikan izin kamera sudah diberikan.', 'error');
-        });
+                camScanning = true;
+                requestAnimationFrame(scanTick);
+            })
+            .catch(err => {
+                console.warn('Camera constraint index ' + index + ' failed:', err);
+                tryNextConstraint(index + 1);
+            });
+        }
+
+        tryNextConstraint(0);
     }
 
     function stopCamera() {
